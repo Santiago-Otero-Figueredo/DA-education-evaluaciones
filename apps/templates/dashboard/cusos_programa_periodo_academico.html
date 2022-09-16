@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load bootstrap4 %}
+{% load tags_obtener_niveles_curso %}
+
+{% block titulo %}
+    Cursos por semestre en el año {{ano}}
+{% endblock titulo %}
+
+{% block titulo_pagina %}
+    Cursos por semestre en el año {{ano}}
+{% endblock titulo_pagina %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Reportes</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Cursos por semestre en el año {{ano}}</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_panel %}
+    Cursos por semestre en el año {{ano}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div class="row mt-1">
+        <form method="GET">
+            <div class="row">
+                <div class="col mt-2">
+                    A continuación se muestran las competencias asociadas a los cursos por semestre para el año {{ano}}
+                </div>
+            </div>
+
+            <hr>
+            <div class="row">
+                <div class="col-3">
+                    {% bootstrap_field form.ano %}
+                </div>
+                <div class="col-3">
+                    {% bootstrap_field form.periodo_academico %}
+                </div>
+                <div class="col-3">
+                    {% bootstrap_field form.programa %}
+                </div>
+            </div>
+            <hr>
+
+            <div class="col-3">
+                <input type="submit" class="btn btn-md btn-info" value="Filtrar">
+            </div>
+        </form>
+        <div class="col-12">
+            <div class="row ">
+                {% for periodo in periodos_academicos %}
+                    <div class="col-12 my-3">
+                        <div class="row card bg-gray-100 h-100">
+                            <h4 class="card-header mb-2 bg-info white-text">
+                                Semestre: {{ periodo }}
+                            </h4>
+                            <div class="card-body row">
+                                {% for curso in periodo.obtener_cursos_por_periodo_academico %}
+                                    {% obtener_niveles curso as niveles %}
+                                    <div class="col-3 text-left px-1">
+                                        <div class="border rounded ">
+                                            <h5 class="mb-2 px-3 pt-2 ">
+                                                {{ curso }} {%if niveles %}
+                                                <a class="btn btn-xs btn-info text-right" href="{% url 'dashboards:niveles_evaluacion' curso.pk periodo.pk %}">Ver detalles</a> {% endif %}
+                                            </h5>
+                                            <div>
+                                                {% for nivel_padre, niveles in niveles.items %}
+                                                    <ul>
+                                                        <p><b>{{nivel_padre}}</b></p>
+                                                        {% for nivel in niveles %}
+                                                            <ol><p>{{nivel.obtener_descripcion_completa}}</p></ol>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="card-body">
+                                        <h5 class="mb-2">
+                                            Sin cursos
+                                        </h5>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock contenido_panel %}
+

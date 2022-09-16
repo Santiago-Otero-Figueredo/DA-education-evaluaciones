@@ -1,0 +1,11 @@
+.btn-principal{
+    color: var(--app-panel-text-color);
+    background-color: var(--app-panel-header-color);
+    border-color: var(--app-panel-header-color);
+}
+
+.btn-secundario{
+    color: var(--app-secondary-text-color);
+    background-color: var(--app-secondary-color);
+    border-color: var(--app-secondary-color);
+}

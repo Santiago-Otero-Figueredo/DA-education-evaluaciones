@@ -1,0 +1,18 @@
+{% url 'dashboards:evaluacion_cursos' as evaluacion_cursos %}
+
+<div class="menu-item has-sub  {% if 'dashboards/' in request.path %}active{% endif %}" id="menu_dasboard">
+    <a href="javascript:;" class="menu-link">
+        <div class="menu-icon">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+        <div class="menu-text">Reportes</div>
+        <div class="menu-caret"></div>
+    </a>
+    <div class="menu-submenu">
+        <div class="menu-item {% if evaluacion_cursos in request.path %}active{% endif %}">
+            <a href="{{evaluacion_cursos}}" class="menu-link">
+                <div class="menu-text">Evaluaciones cursos</div>
+            </a>
+        </div>
+    </div>
+</div>

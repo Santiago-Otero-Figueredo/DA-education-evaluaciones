@@ -1,0 +1,18 @@
+{% url 'usuarios:listado_estudiantes' as listado_estudiantes %}
+
+<div class="menu-item has-sub  {% if 'usuarios/' in request.path %}active{% endif %}" id="menu_usuarios">
+    <a href="javascript:;" class="menu-link">
+        <div class="menu-icon">
+            <i class="fa fa-users"></i>
+        </div>
+        <div class="menu-text">Usuarios</div>
+        <div class="menu-caret"></div>
+    </a>
+    <div class="menu-submenu">
+        <div class="menu-item {% if listado_estudiantes in request.path %}active{% endif %}">
+            <a href="{{listado_estudiantes}}" class="menu-link">
+                <div class="menu-text">Listado estudiantes</div>
+            </a>
+        </div>
+    </div>
+</div>

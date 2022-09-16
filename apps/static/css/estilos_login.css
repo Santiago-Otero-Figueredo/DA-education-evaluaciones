@@ -1,0 +1,40 @@
+.login.login-v1 .login-container .login-body{
+	padding: 0px;
+	background-color: transparent;
+}
+
+.login.login-v1 .login-container .login-body .login-content{
+	color: black;
+}
+
+.login.login-v1 .login-container .login-body .login-content .form-control:focus{
+	color: #1f2225;
+    background-color: #fff;
+    border-color: #5db0ff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgb(0 120 255 / 25%);
+}
+
+.login.login-v1 .login-container .login-body .login-content .form-control{
+	border: 1px solid #dfe1e4;
+    background: white;
+    color: #fff;
+}
+
+.m-t-5{
+	margin-top: 5px;
+}
+
+@media (max-width: 767.98px) {
+	.login.login-v1 {
+		background: transparent;
+	}	
+}
+
+.form-control{
+	color: #1f2225 !important;
+}
+
+.form-control.is-invalid, .was-validated .form-control:invalid{
+	border-color: #ff1b30 !important;
+}

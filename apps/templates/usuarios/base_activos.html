@@ -1,0 +1,81 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+
+{% block titulo %}
+    Listado de estudiantes
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Usuarios</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de estudiantes</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de estudiantes
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de estudiantes
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div class="row">
+        <div class="col-12 m-t-10">
+            <div class="table-responsive">
+                <table class="table table-hover datatable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Programa</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                            <tr>
+                                <td>
+                                    {{usuario.codigo}}
+                                </td>
+                                <td>
+                                    {{usuario.first_name}}
+                                </td>
+                                <td>
+                                    {{usuario.last_name}}
+                                </td>
+                                <th>
+                                    {{usuario.obtener_programa_del_estudiante|default_if_none:'Sin matricula'}}
+                                </th>
+                                <td>
+                                    {{usuario.email}}
+                                </td>
+                                <td>
+                                    {% for grupo in usuario.groups.all %}
+                                        {{grupo}}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if usuario.is_active %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a class="btn btn-xs btn-info mt-1" href="{% url 'dashboards:cursos_estudiante' usuario.pk %}">
+                                        Consultar cursos
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock contenido_panel %}

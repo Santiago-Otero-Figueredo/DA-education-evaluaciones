@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load bootstrap4 %}
+{% load tags_cursos %}
+
+{% block titulo %}
+    Cursos del estudiante {{estudiante}}
+{% endblock titulo %}
+
+{% block titulo_pagina %}
+    Cursos del estudiante {{estudiante}}
+{% endblock titulo_pagina %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Reportes</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Cursos del estudiante {{estudiante}}</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_panel %}
+    Cursos del estudiante {{estudiante}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div class="row mt-1">
+        <form method="GET">
+            <div class="row">
+                <div class="col mt-2">
+                    A continuación se muestran las competencias asociadas a los cursos por semestre para el año {{ano}}
+                </div>
+            </div>
+
+            <hr>
+            <div class="row">
+                <div class="col-3">
+                    {% bootstrap_field form.ano %}
+                </div>
+                <div class="col-3">
+                    {% bootstrap_field form.periodo_academico %}
+                </div>
+                <div class="col-3">
+                    {% bootstrap_field form.programa %}
+                </div>
+            </div>
+            <hr>
+
+            <div class="col-3">
+                <input type="submit" class="btn btn-md btn-info" value="Filtrar">
+            </div>
+        </form>
+        <div class="col-12">
+            <div class="row ">
+                {% for periodo in periodos_academicos %}
+                    <div class="col-12 my-3">
+                        <div class="row card bg-gray-100 h-100">
+                            <h4 class="card-header mb-2 bg-info white-text">
+                                Semestre: {{ periodo }}
+                            </h4>
+                            <div class="card-body row">
+                                {% obtener_cursos_por_estudiante_y_periodo_academico estudiante.pk periodo.pk as cursos %}
+                                {% for curso in cursos %}
+                                    {% obtener_por_curso_programa_id curso.pk programa as curso_programa %}
+                                    {% obtener_por_curso_programa_y_periodo_academico curso_programa.pk periodo.pk as profesor_curso_programa %}
+
+                                    <div class="col-3 text-left px-1">
+                                        <div class="border rounded ">
+                                            <h5 class="mb-2 px-3 pt-2 ">
+                                                {{ curso }}
+                                                <a class="btn btn-xs btn-info text-right" href="{% url 'dashboards:resumen_calificaciones' estudiante.pk profesor_curso_programa.pk %}">Ver detalles generales</a>
+                                                <a class="btn btn-xs btn-info text-right" href="{% url 'dashboards:resumen_calificaciones_por_evaluacion' estudiante.pk profesor_curso_programa.pk %}">Ver detalles por evaluación</a>
+
+                                            </h5>
+                                            <div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="card-body">
+                                        <h5 class="mb-2">
+                                            Sin cursos
+                                        </h5>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock contenido_panel %}
+

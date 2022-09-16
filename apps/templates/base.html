@@ -1,0 +1,271 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>{% block titulo %}{% endblock titulo %} | {{request.tenant.siglas}}</title>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <meta content="DAnalytics Education" name="description" />
+    <meta content="DAnalytics SAS" name="author" />
+
+    <link rel="shortcut icon" href="{{MEDIA_URL}}{{request.tenant.configuracion.favicon}}" type="image/x-icon">
+    <link rel="icon" href="{{MEDIA_URL}}{{request.tenant.configuracion.favicon}}" type="image/x-icon">
+
+    <!-- ================== BEGIN BASE CSS STYLE ================== -->
+    <link href="{% static 'css/vendor.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/facebook/app.min.css' %}" rel="stylesheet" />
+    <!-- ================== END BASE CSS STYLE ================== -->
+    <link href="{% static 'css/estilos_entidades.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/estilos_globales.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/estilo_textos.css' %}" rel="stylesheet" />
+
+    <link href="{% static 'plugins/gritter/css/jquery.gritter.css' %}" rel="stylesheet" />
+
+    <link href="{% static 'plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css' %}" rel="stylesheet" />
+    <link href="{% static 'plugins/bootstrap-datetime-picker/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet"/>
+
+	<link href="{% static 'plugins/simple-calendar/dist/simple-calendar.css' %}" rel="stylesheet" />
+
+	<link href="{% static 'css/introjs/introjs.min.css' %}" rel="stylesheet" />
+
+    <!-- ================== BEGIN BASE JS ================== -->
+    <script src="{% static 'js/vendor.min.js' %}"></script>
+    <script src="{% static 'js/app.min.js' %}"></script>
+    <!-- ================== END BASE JS ================== -->
+
+    {% block css %}{% endblock css %}
+    {{ form.media.css }}
+</head>
+<body>
+    <!-- begin #page-loader -->
+    <div id="loader" class="app-loader">
+        <span class="spinner"></span>
+    </div>
+    <div id="app" class="app app-header-fixed app-sidebar-fixed app-content-full-height">
+        <div id="header" class="app-header app-header-inverse" style="background-color: white">
+            <div class="navbar-header">
+                <a href="javascript:;" class="navbar-brand">
+                    <img src="{{MEDIA_URL}}{{request.tenant.configuracion.logo}}" style="max-height: 80px;">
+                </a>
+                <button type="button" class="navbar-mobile-toggler" data-toggle="app-sidebar-mobile">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="navbar-nav">
+
+                <div class="navbar-item dropdown">
+			<a href="#" data-bs-toggle="dropdown" class="navbar-link dropdown-toggle icon">
+				<i class="fa fa-bell"></i>
+				<span class="badge">{{cantidad_sin_leer}}</span>
+			</a>
+			<div class="dropdown-menu media-list dropdown-menu-end">
+				<div class="dropdown-header">Notificaciones ({{cantidad_sin_leer}})
+					<a class="text-decoration-none" style="margin-left: 8.2rem" href="">Marcar todas como leídas</a>
+				</div>
+				{% for notificacion in request.user.notifications.unread %}
+				    <a href="" class="dropdown-item media">
+					<div class="media-body" style="white-space: normal !important;">
+					    <h6 class="media-heading">{{notificacion.verb}}</h6>
+					    <div class="text-muted fs-10px">Hace
+                            			{% blocktrans with notificacion.timestamp|timesince  as fecha %}
+                                			{{fecha}}
+                            			{% endblocktrans %}
+                        		    </div>
+					</div>
+				    </a>
+				{% endfor %}
+				<div class="dropdown-footer text-center">
+					<a href="" class="text-decoration-none">Ver todas</a>
+				</div>
+			</div>
+		</div>
+                <div class="navbar-item navbar-user dropdown" id="menu_opciones_usuario">
+                    <a href="#" class="navbar-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" id="expandir_opciones">
+                        <div class="image image-icon bg-gray-800 text-gray-600">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <span class="d-none d-md-inline">
+                            {{request.user}} - {{request.user.obtener_rol|default_if_none:'Sin rol asignado'}}
+                        </span> <b class="caret ms-6px"></b>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end me-1" id="sub_menu_opciones">
+                        <a href="" class="dropdown-item" id="menu_actualizar_datos">Actualizar datos</a>
+                        <a href="" class="dropdown-item" id="menu_cambiar_clave">Cambiar clave</a>
+                        <a href="javascript:;" class="dropdown-item" id="menu_intro">Introducción a la plataforma</a>
+                        <div class="dropdown-divider"></div>
+
+                        {% if request.user.grupos_del_usuario.all %}
+                            <a href="" class="dropdown-item" id="menu_cambiar_rol">Cambiar rol</a>
+                            <div class="dropdown-divider"></div>
+                        {% endif %}
+
+                        <a href="" class="dropdown-item" id="menu_cerrar_sesion">Cerrar sesión</a>
+                    </div>
+                </div>
+            </div>
+            <!-- end header-nav -->
+        </div>
+
+        <div id="sidebar" class="app-sidebar">
+           <div class="app-sidebar-content" data-scrollbar="true" data-height="100%">
+                <div class="menu">
+                    <div class="menu-profile">
+                        <a href="javascript:;" class="menu-profile-link" data-toggle="app-sidebar-profile" data-target="#appSidebarProfileMenu">
+                            <div class="menu-profile-info">
+                                <small>Sistema de gestión de tesis - {{request.tenant.siglas}}</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="menu-header">Menú</div>
+                        {% include "menus/base.html" %}
+                    <div class="menu-item d-flex">
+                        <a href="javascript:;" class="app-sidebar-minify-btn ms-auto" data-toggle="app-sidebar-minify"><i class="fa fa-angle-double-left"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="app-sidebar-bg"></div>
+        <div class="app-sidebar-mobile-backdrop"><a href="#" data-dismiss="app-sidebar-mobile" class="stretched-link"></a></div>
+
+
+
+        <!-- begin #content -->
+        <div id="content" class="app-content d-flex flex-column p-0">
+            <div class="app-content-padding flex-grow-1">
+                <!-- begin breadcrumb -->
+                <ol class="breadcrumb">
+                    {% block miga_pan %}
+                        <li class="breadcrumb-item"><a href="javascript:;">Home</a></li>
+                        <li class="breadcrumb-item"><a href="javascript:;">Page Options</a></li>
+                        <li class="breadcrumb-item active">Blank Page</li>
+                    {% endblock miga_pan %}
+                </ol>
+                <!-- end breadcrumb -->
+                <!-- begin page-header -->
+                <h1 class="page-header">{% block titulo_pagina %}{% endblock titulo_pagina %}</h1>
+                <!-- end page-header -->
+
+                {% block mensaje_contenido %}
+                {% endblock mensaje_contenido %}
+
+                {% block contenido %}
+                <!-- begin panel -->
+                <div class="panel panel-danalytics">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">{% block titulo_panel %}{% endblock titulo_panel %}</h4>
+                        <div class="panel-heading-btn">
+                            <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-default" data-click="panel-expand"><i class="fa fa-expand"></i></a>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        {% block contenido_panel %}{% endblock contenido_panel %}
+                    </div>
+                </div>
+                <!-- end panel -->
+                {% endblock contenido %}
+            </div>
+
+            <div id="footer" class="app-footer m-0">
+                {% include "firma.html" with tenant=request.tenant %}
+            </div>
+        </div>
+        <a href="javascript:;" class="btn btn-icon btn-circle btn-success btn-scroll-to-top" data-toggle="scroll-to-top"><i class="fa fa-angle-up"></i></a>
+    </div>
+    <!-- end page container -->
+
+    <script src="{% static 'plugins/gritter/js/jquery.gritter.js' %}"></script>
+    <script src="{% static 'js/app/gritter.js' %}"></script>
+    <script src="{% static 'js/custom/intro.min.js' %}"></script>
+
+    <script src="{% static 'plugins/simple-calendar/dist/jquery.simple-calendar.min.js' %}"></script>
+
+
+    <script>
+        let static_url = {% static '' %};
+        $(document).ready(function() {
+            {% for msg in messages %}
+                $(document).ready(function(){
+                    generar_notificacion("{{ msg.tags }}", "{{msg}}");
+                });
+            {% endfor %}
+            $( "select" ).addClass( "form-select" );
+        });
+    </script>
+
+    {% block js %}{% endblock js %}
+
+    {{ form.media.js }}
+    <style type="text/css">
+        :root {
+            --app-theme: #ff0000;
+            --app-panel-header-color: #ff0000;
+            --app-panel-text-color: #ffffff;
+
+            --app-secondary-color: #ff0000;
+            --app-secondary-text-color: #1f2225;
+        }
+    </style>
+    <script src="{% static 'plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker/dist/locales/bootstrap-datepicker.es.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datetime-picker/js/bootstrap-datetimepicker.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datetime-picker/js/locales/bootstrap-datetimepicker.es.js' %}"></script>
+
+    <script>
+        $('.fecha').datepicker({
+            todayHighlight: true,
+            language: "es",
+            startView: 2,
+            format: "yyyy-mm-dd",
+        });
+        $('.fecha_acordada').datetimepicker({
+            todayHighlight: true,
+            language: "es",
+            useCurrent:false,
+            format: 'yyyy-mm-dd hh:ii'
+        });
+        $(".readonly").keydown(function(e){
+            e.preventDefault();
+        });
+    </script>
+    {% comment %}
+    <script src="{% static 'plugins/moment/min/moment-with-locales.min.js' %}"></script>
+    <script src="{% static 'plugins/moment/min/moment.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-calendar/js/bootstrap_calendar.min.js' %}"></script>
+
+    <script src="{% static 'js/custom/introjs/intro.min.js' %}"></script>
+    <script>
+
+        $('#btn_calendar').click(() => {
+            $('#modal_calendar').modal('show')
+        })
+
+        $('#btn_indicadores').click(() => {
+            $('#modal_indicadores').modal('show')
+        })
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            $('button[type="submit"]').click(function(e){
+                $("#modal_procesando").modal({
+                    backdrop: "static",
+                    keyboard: false,
+                    show: true
+                });
+                setTimeout(function() {
+                $("#modal_procesando").modal("hide");
+                }, 5000);
+            });
+        });
+    </script>
+    {% endcomment %}
+
+
+</body>
+</html>

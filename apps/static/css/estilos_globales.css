@@ -1,0 +1,190 @@
+/*Modificacion texto gritter (mensajes)*/
+body #gritter-notice-wrapper .gritter-item-wrapper .gritter-item .gritter-close:before{
+	content: "Cerrar" !important;
+	color: white;
+}
+
+.panel.panel-danalytics>.panel-heading {
+    background-color: var(--app-panel-header-color);
+    color: var(--app-panel-text-color);
+}
+.app-header.app-header-inverse .navbar-nav>.navbar-item>.navbar-link{
+    color: black;
+}
+
+.app-header.app-header-inverse .navbar-mobile-toggler {
+    background-color: var(--app-panel-header-color)!important;
+}
+
+.m-l-5{
+    margin-left: 5px;
+}
+
+.form-group{
+    margin-bottom: 10px;
+}
+
+.icono {
+    color: black;
+}
+
+.icono:hover {
+    color: var(--app-panel-header-color);
+}
+
+
+.label-red {color: #ff5b57;}
+.label-blue {color: #348fe2;}
+
+.fa-clock{
+    color: grey;
+}
+.fa-check-circle{
+    color: green;
+}
+.fa-times-circle{
+    color: red;
+}
+
+.fa-download{
+    color: rgb(71, 67, 67);
+}
+
+.center{
+    text-align: center;
+    vertical-align:middle;
+}
+
+.form-check .form-check-input{
+    margin-left: 0px;
+    float: none;
+}
+
+.form-check{
+    padding-left: 0px;
+}
+
+.seleccion-checkbox{
+    min-width:75px;
+}
+
+.justify{
+    text-align: justify;
+    text-justify: inter-word;
+
+}
+
+.ml-5 {
+    margin-left: 2.8125rem!important;
+}
+.ml-4 {
+    margin-left: 1.40625rem!important;
+}
+.ml-3 {
+    margin-left: 0.9375rem!important;
+}
+.ml-2 {
+    margin-left: 0.46875rem!important;
+}
+.ml-1 {
+    margin-left: 0.234375rem!important;
+}
+
+.white-text{
+    color: white;
+}
+
+
+.panel .panel-heading .panel-title.tablero-control {
+    font-size: 1.2rem;
+}
+
+.right{
+    text-align: right;
+}
+
+h4 small{
+    font-size: 75%;
+}
+
+.bg-danalytics{
+    background-color: var(--app-panel-header-color) !important;
+    color: var(--app-panel-text-color) !important;
+}
+
+.bg-danalytics-secundario{
+    background-color: var(--app-secondary-color);
+    color: var(--app-secondary-text-color);
+}
+
+body .introjs-tooltipReferenceLayer .introjs-tooltip .introjs-progress .introjs-progressbar {
+    background:  var(--app-theme) !important;
+}
+
+body .introjs-tooltipReferenceLayer .introjs-tooltip .introjs-tooltiptext {
+    text-align: center;
+}
+
+.calificacion a {
+    color: #777b6e;
+}
+.calificacion.activo a {
+    color: #ffe9a4;
+}
+.calificacion a:hover {
+    color: #ffe9a4;
+}
+.calificacion b {
+    color: #777b6e;
+    font-size: 0.6rem;
+}
+.calificacion.activo b {
+    color: #ffe9a4;
+}
+
+.app-header .navbar-brand {
+    height: 70px !important;
+}
+
+.app-sidebar {
+    padding-top: 70px !important;
+}
+
+.app-content .app-content-padding {
+    padding: 40px 30px !important;
+}
+
+.app-header-fixed {
+    padding-top: 60px !important;
+}
+
+.pace-progress{
+    top: 70px !important;
+}
+
+.pace .pace-activity {
+    top: 75px !important;
+}
+
+@media (max-width: 767.98px) {
+    .app-header-fixed {
+        padding-top: 121px !important
+    }
+    .app-header .navbar-header {
+        padding: 10px 10px !important;
+    }
+}
+
+.box-indicadores{
+    background-color:  var(--app-theme) !important;
+    height: 115px;
+}
+
+.indicadores-reportes{
+    background-color:  #f0eeee !important;
+ }
+
+
+.am5-modal{
+    z-index: 1 !important;
+}
