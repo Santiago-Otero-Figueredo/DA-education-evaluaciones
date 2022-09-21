@@ -7,4 +7,5 @@ app_name = "usuarios"
 
 urlpatterns = [
     path('listado-estudiantes', ListadoEstudiantes.as_view(), name="listado_estudiantes"),
+    path('listado-profesores', ListadoProfesores.as_view(), name="listado_profesores")
 ]

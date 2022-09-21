@@ -49,6 +49,20 @@ class Curso(ModeloBase):
             programas_del_curso__matriculas_del_cursoprograma__periodo_academico = id_periodo_academico
         )
 
+    @staticmethod
+    def obtener_cursos_por_profesor_periodo_academico_y_programa(
+        id_profesor: int,
+        id_periodo_academico: int,
+        id_programa: int,
+    ) -> QuerySet['Curso']:
+
+        return Curso.objects.filter(
+            programas__pk=id_programa,
+            programas_del_curso__profesor_curso_programa_asociados__profesor = id_profesor,
+            programas_del_curso__profesor_curso_programa_asociados__periodo_academico__pk=id_periodo_academico
+        )
+
+
 
 class CursoDelPrograma(ModeloBase):
     curso = models.ForeignKey(Curso, related_name="programas_del_curso", on_delete=models.PROTECT)

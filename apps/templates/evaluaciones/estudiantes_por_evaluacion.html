@@ -1,0 +1,65 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+{% load tags_notas %}
+
+{% block titulo %}
+    Listado de preguntas de la evaluación: {{actividad.nombre}}
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Evaluaciones</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de preguntas de la evaluación: {{actividad.nombre}}</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de preguntas de la evaluación: {{actividad.nombre}}
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de preguntas de la evaluación: {{actividad.nombre}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+
+    <div class="mt-3">
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Estudiante</th>
+                    <th>Estado</th>
+                    <th>Calificar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estudiante in estudiantes_grupo %}
+                    <tr>
+                        <td>
+                            {{estudiante}}
+                        </td>
+                        <td>
+                            {% obtener_notas_por_estudiante_y_actividad estudiante.pk actividad.pk as notas%}
+                            {% if notas|length == actividad.preguntas_asociadas.all|length %}
+                                Calificado <i class="fa fa-check-circle" aria-hidden="true" style="color: green;"></i>
+                            {% elif notas|length != actividad.preguntas_asociadas.all|length and notas|length != 0 %}
+                                Incompleto <i class="fa fa-pause-circle" aria-hidden="true" style="color: orange;"></i>
+                            {% else %}
+                                Sin calificar <i class="fa fa-times-circle" aria-hidden="true" style="color: red;"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'evaluaciones:calificar_evaluaciones' grupo.pk actividad.pk estudiante.pk %}" class="btn btn-xs btn-info">
+                                Calificar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <a href="{% url 'evaluaciones:listado_actividades_por_profesor_curso_programa' profesor_curso_programa.pk grupo.pk %}" class="btn btn-secondary">
+            Volver a evaluaciones
+        </a>
+    </div>
+{% endblock contenido_panel %}

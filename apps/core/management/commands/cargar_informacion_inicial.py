@@ -14,6 +14,7 @@ import names
 import openpyxl
 from django.conf import settings
 
+UBICACION_ARCHIVOS ="/_datos_iniciales/produccion/"
 
 class Command(BaseCommand):
     help = 'Guarda un archivo de backup.'
@@ -36,15 +37,17 @@ class Command(BaseCommand):
         # cargar_evaluaciones(self)
         # cargar_preguntas(self)
         # cargar_calificaciones_cualitativas(self)
-        # cargar_grupos_estudiantes(self)
-        cargar_notas(self)
+        # cargar_grupos_profesor(self)
+        cargar_grupos_estudiantes(self)
+        # cargar_notas(self)
+        # generar_notas_automaticamente(self)
 
         pass
 
 def cargar_grupos(handle):
 
     if len(Group.objects.all()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/01_grupos.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}01_grupos.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -61,7 +64,7 @@ def cargar_programas(handle):
 
     if len(Programa.obtener_todos()) == 0:
 
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/02_programas.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}02_programas.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -84,7 +87,7 @@ def cargar_programas(handle):
 def cargar_cursos(handle):
 
     if len(Curso.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/03_cursos.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}03_cursos.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -105,7 +108,7 @@ def cargar_cursos(handle):
 def cargar_cursos_del_programa(handle):
 
     if len(CursoDelPrograma.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/04_cursos_del_programa.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}04_cursos_del_programa.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -130,7 +133,7 @@ def cargar_cursos_del_programa(handle):
 def cargar_estudiantes(handle):
 
     if len(Usuario.obtener_estudiantes()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/05_usuarios.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}05_usuarios.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -159,7 +162,7 @@ def cargar_estudiantes(handle):
 def cargar_profesores(handle):
 
     if len(Usuario.obtener_profesores()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/05.2_profesores.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}05.2_profesores.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -189,7 +192,7 @@ def cargar_profesores(handle):
 def cargar_periodos_academicos(handle):
 
     if len(PeriodoAcademico.obtener_activos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/06_periodos_academicos.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}06_periodos_academicos.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -214,7 +217,7 @@ def cargar_matriculas(handle):
 
     if not Matricula.objects.filter(periodo_academico=1).exists():
 
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/07_matriculas.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}07_matriculas.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -239,7 +242,7 @@ def cargar_matriculas(handle):
 def cargar_profesor_curso_programa(handle):
 
     if len(ProfesorCursoPrograma.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/08_profesor_cursos_programa.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}08_profesor_cursos_programa.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -263,7 +266,7 @@ def cargar_profesor_curso_programa(handle):
 def cargar_tipos_nivel_evaluacion(handle):
 
     if len(TipoNivelEvaluacion.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/09_tipos_nivel_evaluacion.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}09_tipos_nivel_evaluacion.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -295,7 +298,7 @@ def cargar_niveles_evaluacion(handle):
 
     if not NivelEvaluacion.objects.filter(curso_del_programa__pk=1).exists():
 
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/10_niveles_evaluacion.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}10_niveles_evaluacion.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -330,7 +333,7 @@ def cargar_restriccion_nivel_profesor(handle):
 
     if len(RestriccionNivelProfesorCurso.objects.filter(profesor_curso_programa__pk=1)) == 0:
 
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/11_restriccion_nivel_profesor_curso.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}11_restriccion_nivel_profesor_curso.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -352,7 +355,7 @@ def cargar_restriccion_nivel_profesor(handle):
 def cargar_tipos_actividad(handle):
 
     if len(TipoActividad.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/12_tipos_actividad.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}12_tipos_actividad.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -371,7 +374,7 @@ def cargar_tipos_actividad(handle):
 def cargar_restricciones_nivel_actividad(handle):
 
     if len(RestriccionNivelActividad.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/13_restricciones_nivel_actividad.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}13_restricciones_nivel_actividad.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -392,7 +395,7 @@ def cargar_restricciones_nivel_actividad(handle):
 def cargar_evaluaciones(handle):
 
     if len(Actividad.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/14_actividades.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}14_actividades.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -416,7 +419,7 @@ def cargar_evaluaciones(handle):
 def cargar_preguntas(handle):
 
     if len(Pregunta.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/15_preguntas.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}15_preguntas.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -442,7 +445,7 @@ def cargar_preguntas(handle):
 def cargar_calificaciones_cualitativas(handle):
 
     if len(CalificacionCualitativa.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/16_calificacion_cualtativa.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}16_calificacion_cualtativa.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
@@ -459,31 +462,45 @@ def cargar_calificaciones_cualitativas(handle):
 
         handle.stdout.write(handle.style.SUCCESS("Calificaciones cualitativas creadas"))
 
-def cargar_grupos_estudiantes(handle):
+def cargar_grupos_profesor(handle):
 
     if len(Grupo.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/17_grupos.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}17_grupos_profesor.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):
             id = int(worksheet[i][0].value)
             profesor_curso_programa = int(worksheet[i][1].value)
-            estudiante = int(worksheet[i][2].value)
-            nombre = str(worksheet[i][3].value)
+            nombre = str(worksheet[i][2].value)
 
             Grupo.objects.create(
                 id=id,
                 profesor_curso_programa=ProfesorCursoPrograma.obtener_por_id(profesor_curso_programa),
-                estudiante=Usuario.obtener_por_id(estudiante),
                 nombre=nombre,
             )
 
-        handle.stdout.write(handle.style.SUCCESS("Grupos creados"))
+        handle.stdout.write(handle.style.SUCCESS("Grupos profesor creados"))
+
+def cargar_grupos_estudiantes(handle):
+
+    workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}18_grupos_estudiante.xlsx')
+    worksheet = workbook.active
+
+    for i in range(2, worksheet.max_row + 1):
+        id = int(worksheet[i][0].value)
+        grupo = int(worksheet[i][1].value)
+        estudiante = int(worksheet[i][2].value)
+
+        grupo = Grupo.obtener_por_id(grupo)
+        estudiante = Usuario.obtener_por_id(estudiante)
+        grupo.estudiantes.add(estudiante)
+
+    handle.stdout.write(handle.style.SUCCESS("Grupos estudiantes creados"))
 
 def cargar_notas(handle):
 
     if len(Nota.obtener_todos()) == 0:
-        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}/_datos_iniciales/18_notas.xlsx')
+        workbook = openpyxl.load_workbook(f'{settings.ROOT_DIR}{UBICACION_ARCHIVOS}19_notas.xlsx')
         worksheet = workbook.active
 
         for i in range(2, worksheet.max_row + 1):

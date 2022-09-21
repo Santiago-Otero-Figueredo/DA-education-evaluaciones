@@ -32,6 +32,13 @@ class PeriodoAcademico(ModeloBase):
         return "{}-{}".format(self.ano, self.periodo)
 
     @staticmethod
+    def obtener_activo():
+        try:
+            return PeriodoAcademico.objects.get(activa=True)
+        except PeriodoAcademico.DoesNotExist:
+            return None
+
+    @staticmethod
     def obtener_periodos_academicos_por_ano(ano: int) -> QuerySet['PeriodoAcademico']:
         return PeriodoAcademico.obtener_activos().filter(ano=ano).order_by('periodo')
 

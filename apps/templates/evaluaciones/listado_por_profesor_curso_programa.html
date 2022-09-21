@@ -1,0 +1,56 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+
+{% block titulo %}
+    Listado de actividades para {{grupo}}
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Competencias</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de actividades para {{grupo}}</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de actividades para {{grupo}}
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de actividades para {{grupo}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div>
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Tipo evaluación</th>
+                    <th>Nombre</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for actividad in actividades %}
+                    <tr>
+                        <td>
+                            {{actividad.tipo_actividad}}
+                        </td>
+                        <td>
+                            {{actividad.nombre}}
+                        </td>
+                        <td>
+                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:estudiantes_evaluacion' profesor_curso_programa.pk grupo.pk actividad.pk %}">
+                                Calificar estudiantes
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <a href="{% url 'competencias:listado_grupos_por_profesor_curso_programa' profesor_curso_programa.pk  %}" class="btn btn-secondary">
+            Volver a grupos
+        </a>
+    </div>
+{% endblock contenido_panel %}

@@ -1,0 +1,56 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+
+{% block titulo %}
+    Listado de grupos para {{profesor_curso_programa}}
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Competencias</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de grupos para {{profesor_curso_programa}}</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de grupos para {{profesor_curso_programa}}
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de grupos para {{profesor_curso_programa}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div>
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cantidad estudiantes</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grupo in grupos %}
+                    <tr>
+                        <td>
+                            {{grupo.nombre}}
+                        </td>
+                        <td>
+                            {{grupo.obtener_estudiantes|length }}
+                        </td>
+                        <td>
+                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:listado_actividades_por_profesor_curso_programa' profesor_curso_programa.pk grupo.pk %}">
+                                Consultar evaluaciones
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <a href="{% url 'cursos:cursos_asignados_profesor' profesor_curso_programa.profesor.pk  %}" class="btn btn-secondary">
+            Volver a cursos
+        </a>
+    </div>
+{% endblock contenido_panel %}

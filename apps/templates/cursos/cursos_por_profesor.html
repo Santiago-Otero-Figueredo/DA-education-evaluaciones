@@ -1,0 +1,66 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+{% load tags_cursos %}
+
+{% block titulo %}
+    Listado de cursos para el profesor {{profesor}} en el periodo académico {{periodo_academico}}
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Usuarios</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de cursos para el profesor {{profesor}}</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de cursos para el profesor {{profesor}} en el periodo académico {{periodo_academico}}
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de cursos para el profesor {{profesor}} en el periodo académico {{periodo_academico}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <form method="GET" class="row align-items-center">
+        <div class="col-6">
+            {% bootstrap_form form %}
+        </div>
+
+        <div  class="col-2">
+            <input type="submit" name="Filtrar" value="Filtrar" class="btn btn-primary">
+        </div>
+    </form>
+    <div class="mt-3">
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Código</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for curso in cursos %}
+                    <tr>
+                        <td>
+                            {{curso.nombre}}
+                        </td>
+                        <td>
+                            {{curso.codigo}}
+                        </td>
+                        <td>
+                            {% obtener_por_curso_programa_id curso.pk programa.pk as curso_del_programa %}
+                            {% obtener_por_curso_programa_y_periodo_academico curso_del_programa.pk periodo_academico.pk as profesor_curso_programa%}
+                            <a class="btn btn-xs btn-info mt-1" href="{% url 'competencias:listado_grupos_por_profesor_curso_programa' profesor_curso_programa.pk  %}">
+                                Consultar grupos
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <a href="{% url 'usuarios:listado_profesores' %}" class="btn btn-secondary">Volver</a>
+    </div>
+{% endblock contenido_panel %}

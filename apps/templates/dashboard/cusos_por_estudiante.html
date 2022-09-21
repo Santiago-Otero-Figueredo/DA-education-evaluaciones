@@ -59,16 +59,14 @@
                             <div class="card-body row">
                                 {% obtener_cursos_por_estudiante_y_periodo_academico estudiante.pk periodo.pk as cursos %}
                                 {% for curso in cursos %}
-                                    {% obtener_por_curso_programa_id curso.pk programa as curso_programa %}
+                                    {% obtener_por_curso_programa_id curso.pk programa.pk as curso_programa %}
                                     {% obtener_por_curso_programa_y_periodo_academico curso_programa.pk periodo.pk as profesor_curso_programa %}
-
                                     <div class="col-3 text-left px-1">
                                         <div class="border rounded ">
                                             <h5 class="mb-2 px-3 pt-2 ">
                                                 {{ curso }}
                                                 <a class="btn btn-xs btn-info text-right" href="{% url 'dashboards:resumen_calificaciones' estudiante.pk profesor_curso_programa.pk %}">Ver detalles generales</a>
                                                 <a class="btn btn-xs btn-info text-right" href="{% url 'dashboards:resumen_calificaciones_por_evaluacion' estudiante.pk profesor_curso_programa.pk %}">Ver detalles por evaluación</a>
-
                                             </h5>
                                             <div>
 

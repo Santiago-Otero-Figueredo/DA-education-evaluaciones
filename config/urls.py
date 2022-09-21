@@ -22,7 +22,10 @@ urlpatterns = [
     path('', Inicio.as_view(), name="inicio"),
     path('admin/', admin.site.urls),
     path('select2/', include('django_select2.urls')),
+    path("competencias/", include("apps.competencias.urls", namespace="competencias")),
+    path("cursos/", include("apps.cursos.urls", namespace="cursos")),
     path("dashboards/", include("apps.dashboards.urls", namespace="dashboards")),
+    path("evaluaciones/", include("apps.evaluaciones.urls", namespace="evaluaciones")),
     path('usuarios/', include("apps.usuarios.urls", namespace="usuarios")),
 
 ]

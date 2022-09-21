@@ -12,7 +12,7 @@ class TipoActividad(ModeloBase):
         verbose_name="Restricciones de nivel de evaluación para un profesor en un curso de programa",
         related_name="tipos_evaluacion_asociadas"
     )
-    nombre = models.CharField(max_length=80, verbose_name="Nombre de la actividad de evaluación")
+    nombre = models.TextField(verbose_name="Nombre de la actividad de evaluación")
 
     class Meta:
         ordering = ['nombre']
@@ -68,7 +68,7 @@ class Actividad(ModeloBase):
         choices=TIPOS_CALIFICACIONES,
         default='Cualitativa'
     )
-    nombre = models.CharField(max_length=80, verbose_name="Nombre de la evaluación")
+    nombre = models.TextField(verbose_name="Nombre de la evaluación")
 
     class Meta:
         ordering = ['profesor_curso_programa', 'tipo_actividad', 'nombre']
@@ -111,6 +111,9 @@ class CalificacionCualitativa(ModeloBase):
         verbose_name="Valor numérico asociado a esta calificación cuantitativa"
     )
 
+    def __str__(self):
+        return f'{self.valor_numerico} - {self.nombre}'
+
 class Nota(ModeloBase):
     calificacion_cualitativa = models.ForeignKey(
         CalificacionCualitativa,
@@ -143,6 +146,21 @@ class Nota(ModeloBase):
             return f'{self.estudiante} - {self.pregunta} - {self.calificacion_cualitativa}'
         return f'{self.estudiante} - {self.pregunta} -  {self.resultado}'
 
+    @staticmethod
+    def obtener_por_estudiante_y_pregunta(id_estudiante: int, id_pregunta: int):
+        try:
+            return Nota.objects.get(estudiante__pk=id_estudiante, pregunta__pk=id_pregunta)
+        except:
+            return None
+
+    @staticmethod
+    def obtener_varias_por_estudiante_y_actividad(id_estudiante: int, id_actividad: int):
+        return Nota.objects.filter(estudiante__pk=id_estudiante, pregunta__actividad__pk=id_actividad)
+
+
+    @staticmethod
+    def existe_por_estudiante_y_pregunta(id_estudiante: int, id_pregunta: int):
+        return Nota.objects.filter(estudiante__pk=id_estudiante, pregunta__pk=id_pregunta).exists()
 
 
 class CalificacionEvaluacion(ModeloBase):

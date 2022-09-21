@@ -1,0 +1,67 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+
+{% block titulo %}
+    Listado de profesores
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Usuarios</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de profesores</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de profesores
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de profesores
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div>
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profesor in profesores %}
+                    <tr>
+                        <td>
+                            {{profesor.first_name}}
+                        </td>
+                        <td>
+                            {{profesor.last_name}}
+                        </td>
+                        <td>
+                            {{profesor.email}}
+                        </td>
+                        <td>
+                            {{profesor.obtener_rol}}
+                        </td>
+                        <td>
+                            {% if profesor.is_active %}
+                                <span class="label label-success">Activo</span>
+                            {% else %}
+                                <span class="label label-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn btn-xs btn-info px-3" href="{% url 'cursos:cursos_asignados_profesor' profesor.pk %}">
+                                Calificar cursos
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock contenido_panel %}

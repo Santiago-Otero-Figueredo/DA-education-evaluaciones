@@ -39,3 +39,13 @@ class Programa(ModeloBase):
         ).values_list('pk', flat=True))
 
         return Programa.obtener_por_lista_ids(programas_ids)
+
+    @staticmethod
+    def obtener_programas_por_profesor_y_periodo_academico(profesor_id: int, periodo_academico_id: int) -> QuerySet['Programa']:
+
+        programas_ids = set(Programa.objects.filter(
+            cursos_del_programa__profesor_curso_programa_asociados__profesor__pk=profesor_id,
+            cursos_del_programa__profesor_curso_programa_asociados__periodo_academico__pk=periodo_academico_id
+        ).values_list('pk', flat=True))
+
+        return Programa.obtener_por_lista_ids(programas_ids)

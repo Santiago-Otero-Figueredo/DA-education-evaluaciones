@@ -1,4 +1,6 @@
 {% url 'usuarios:listado_estudiantes' as listado_estudiantes %}
+{% url 'usuarios:listado_profesores' as listado_profesores %}
+
 
 <div class="menu-item has-sub  {% if 'usuarios/' in request.path %}active{% endif %}" id="menu_usuarios">
     <a href="javascript:;" class="menu-link">
@@ -12,6 +14,11 @@
         <div class="menu-item {% if listado_estudiantes in request.path %}active{% endif %}">
             <a href="{{listado_estudiantes}}" class="menu-link">
                 <div class="menu-text">Listado estudiantes</div>
+            </a>
+        </div>
+        <div class="menu-item {% if listado_profesores in request.path %}active{% endif %}">
+            <a href="{{listado_profesores}}" class="menu-link">
+                <div class="menu-text">Listado profesores</div>
             </a>
         </div>
     </div>

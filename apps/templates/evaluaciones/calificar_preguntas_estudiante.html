@@ -1,0 +1,64 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+{% load tags_cursos %}
+
+{% block titulo %}
+    Listado de preguntas de la evaluación: {{actividad.nombre}}
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Evaluaciones</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de preguntas de la evaluación: {{actividad.nombre}}</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de preguntas de la evaluación: {{actividad.nombre}}
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de preguntas de la evaluación: {{actividad.nombre}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <form method="POST" class="row align-items-center">{% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="mt-3">
+            <table class="table table-hover datatable">
+                <thead>
+                    <tr>
+                        <th>Pregunta</th>
+                        <th>Calificación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form in formset %}
+                        <tr>
+                            <td>
+                                {{ form.instance.numeracion }}. {{form.instance.contenido}}
+                            </td>
+                            <td>
+                                {% bootstrap_form form show_label=False%}
+                                {{form.errors}}
+                            </td>
+                            {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row col-12 justify-content-center mb-3">
+            <button class="btn btn-sm btn-success px-4">Registrar calificaciones</button>
+        </div>
+
+
+    </form>
+    <div>
+        <a href="{% url 'evaluaciones:estudiantes_evaluacion' actividad.profesor_curso_programa.pk grupo.pk actividad.pk %}" class="btn btn-secondary">
+            Volver a estudiantes
+        </a>
+    </div>
+{% endblock contenido_panel %}

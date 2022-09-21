@@ -11,9 +11,18 @@ from apps.periodos_academicos.models import PeriodoAcademico
 from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
-    from apps.cursos.models import Curso
+    from apps.evaluaciones.models import Actividad
+
 
 class TipoNivelEvaluacion(ModeloBase):
+    """
+        Este modelo hace referencia a los tipos de niveles de evaluación que puede tener una institución educativa. Son las
+        categorías en las que están agrupados los niveles de evaluación. Por ejemplo(Competencias, Resultados de aprendizaje,
+        indicadores de logro, etc)
+
+        Estos tipos están organizados de forma jerárquica, siendo el primer de todos aquel que tiene el atributo nivel = 1 y
+        el tipo_superior = None
+    """
     tipo_superior = models.ForeignKey(
         'self',
         verbose_name='Tipo de nivel superior',
@@ -39,6 +48,12 @@ class TipoNivelEvaluacion(ModeloBase):
 
 
 class NivelEvaluacion(ModeloBase):
+    """
+        Este modelo hace referencia a los niveles de evaluación según su categoría(TipoNivelEvaluacion) para una institución educativa.
+        Son los aspectos que se quieren evaluar dentro del programa académico para un curso. Estos aspectos están agrupados por categorías
+        y algunos definen los porcentajes que deben ser asignados para evaluar en el curso.
+
+    """
     tipo_nivel = models.ForeignKey(
         TipoNivelEvaluacion,
         verbose_name="Tipo nivel evaluación",
@@ -159,6 +174,15 @@ class MetaObjetivo(ModeloBase):
 
 
 class ProfesorCursoPrograma(ModeloBase):
+    """
+        Este modelo hace referencia al profesor de un curso de programa para un periodo academico.
+        por ejemplo, El profesor Jose dicta el curso de bases de datos para el programa de ingeniería informática
+        en el semestre II del año 2022
+
+        Esta asociado al modelo estudiantes mediante el modelo Grupo del modulo competencias
+        Esta asociado al modelo RestriccionNivelProfesorCurso del modulo competencias
+        Esta asociado al modelo Actividad del modulo evaluaciones
+    """
     curso_programa = models.ForeignKey(
         CursoDelPrograma,
         verbose_name="Curso del programa",
@@ -182,12 +206,6 @@ class ProfesorCursoPrograma(ModeloBase):
         verbose_name="Niveles de evaluación asociados",
         related_name="profesor_curso_programa_asociado_a_niveles_evaluacion",
         through='competencias.RestriccionNivelProfesorCurso'
-    )
-    estudiantes_asignados = models.ManyToManyField(
-        Usuario,
-        verbose_name="Estudiantes asignados a este profesor de un curso del programa",
-        related_name="profesor_curso_programa_asociados_a_estudiante",
-        through='competencias.Grupo'
     )
 
     class Meta:
@@ -227,32 +245,55 @@ class ProfesorCursoPrograma(ModeloBase):
         except:
             return None
 
+    def obtener_actividades(self) -> QuerySet['Actividad']:
+        return self.actividades_asociadas.all()
+
 
 class Grupo(ModeloBase):
+    """
+        Este modelo hacer referencia  ala relación entre un estudiante y un profesor de un curso de programa en un periodo academico.
+        por ejemplo, el estudiante Santiago esta asociado al profesor Jose que dicta el curso de bases de datos para el programa de ingeniería informática
+        en el semestre II del año 2022 en el grupo C
+    """
     profesor_curso_programa = models.ForeignKey(
         ProfesorCursoPrograma,
         verbose_name="Profesor de un curso de programa",
         related_name="grupos_asociados",
         on_delete=models.PROTECT
     )
-    estudiante = models.ForeignKey(
+    estudiantes = models.ManyToManyField(
         Usuario,
         verbose_name="Estudiante de un curso de programa",
-        related_name="grupos_asociados",
-        on_delete=models.PROTECT
+        related_name="grupos_asociados"
     )
     nombre = models.CharField(max_length=50, verbose_name="Nombre del grupo")
-    fecha_creacion = models.DateTimeField(editable=False, auto_now_add=True)
-    fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['profesor_curso_programa', 'nombre', 'fecha_creacion']
+        ordering = ['profesor_curso_programa', 'nombre']
 
     def __str__(self):
         return f'{self.profesor_curso_programa} - {self.nombre}'
 
+    @staticmethod
+    def obtener_grupos_de_profesor_curso_programa(id_profesor_curso_programa: int) -> QuerySet['Grupo']:
+        profesor_curso_programa = ProfesorCursoPrograma.obtener_por_id(id_profesor_curso_programa)
+        return profesor_curso_programa.grupos_asociados.all()
+
+    def obtener_estudiantes(self) -> QuerySet['Usuario']:
+
+        return Usuario.objects.filter(
+            grupos_asociados__pk=self.pk
+        )
+
 
 class RestriccionNivelProfesorCurso(ModeloBase):
+    """
+        Este modelo hace referencia al porcentaje que debe tener un nivel de evaluacion al ser evaluado por un profesor, este valor es definido
+        libremente por el profesor, la única condición que se debe cumplir es que la suma de porcentajes para todos los registros de este profesor
+        en un curso de un programa en un periodo academico no supere el limite del nivel de evaluacion superior del nivel de evalaución actual.
+        por ejemplo, para el nivel de evaluacion I.L.1 Visualiza adecuadamente señales periódicas y transitorias en un osciloscopio
+
+    """
     profesor_curso_programa = models.ForeignKey(
         ProfesorCursoPrograma,
         verbose_name="Profesor del curso del programa",

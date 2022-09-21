@@ -59,7 +59,7 @@
                 <thead>
                 <tr>
                     {% for tipo_nivel in tipos %}
-                        {% if forloop.counter == tipos|length %}
+                        {% if tipo_nivel.counter == tipos|length %}
                             <th>%RA</th>
                         {% endif %}
                         <th>{{tipo_nivel}}</th>

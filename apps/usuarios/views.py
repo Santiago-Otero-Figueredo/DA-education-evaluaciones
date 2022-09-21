@@ -12,3 +12,12 @@ class ListadoEstudiantes(ListView):
 
     def get_queryset(self):
         return Usuario.obtener_todos_los_estudiantes()
+
+
+class ListadoProfesores(ListView):
+    model = Usuario
+    context_object_name = "profesores"
+    template_name = "usuarios/profesores/listado.html"
+
+    def get_queryset(self):
+        return Usuario.obtener_profesores()
