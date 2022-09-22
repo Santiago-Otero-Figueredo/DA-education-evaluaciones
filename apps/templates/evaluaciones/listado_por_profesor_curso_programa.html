@@ -39,7 +39,7 @@
                             {{actividad.nombre}}
                         </td>
                         <td>
-                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:estudiantes_evaluacion' profesor_curso_programa.pk grupo.pk actividad.pk %}">
+                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:calificar_evaluaciones' grupo.pk actividad.pk %}">
                                 Calificar estudiantes
                             </a>
                         </td>

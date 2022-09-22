@@ -98,7 +98,7 @@ class Pregunta(ModeloBase):
     )
 
     class Meta:
-        ordering = ['actividad', 'restriccion_nivel_actividad', 'numeracion', 'contenido']
+        ordering = ['numeracion', 'contenido', 'actividad', 'restriccion_nivel_actividad']
 
     def __str__(self) -> str:
         return f'{self.restriccion_nivel_actividad} - {self.actividad} - {self.numeracion}.{self.contenido} - {self.porcentaje}'
@@ -137,7 +137,7 @@ class Nota(ModeloBase):
     )
     resultado = models.FloatField(
         verbose_name='Resultado cuantitativo de la respuesta',
-        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)]
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)]
     )
 
 

@@ -4,10 +4,10 @@ from django.http import HttpResponseRedirect
 
 from django.views.generic import FormView, CreateView, ListView
 
-from apps.evaluaciones.forms import NotaEstudianteCualitativoForm, NotaEstudianteCuantitativoForm, notas_cuantitativas_formset, notas_cualitativas_formset
+from apps.evaluaciones.forms import NotaEstudianteCualitativoForm, NotaEstudianteCuantitativoForm
 
 from apps.competencias.models import Grupo, ProfesorCursoPrograma
-from apps.evaluaciones.models import Actividad, Nota
+from apps.evaluaciones.models import Actividad, CalificacionCualitativa, Nota, Pregunta
 from apps.usuarios.models import Usuario
 
 
@@ -34,45 +34,18 @@ class ListadoEvaluacionesProfesorCursoPrograma(ListView):
         return context
 
 
-class EstudiantesPorEvaluacion(ListView):
-    model = Usuario
-    context_object_name = 'estudiantes_grupo'
-    template_name = 'evaluaciones/estudiantes_por_evaluacion.html'
-
-    def get_queryset(self):
-        id_grupo = self.kwargs.pop('id_grupo', 0)
-        id_profesor_curso_programa = self.kwargs.pop('id_profesor_curso_programa', 0)
-        id_actividad = self.kwargs.pop('id_actividad', 0)
-
-        self.actividad = Actividad.obtener_por_id(id_actividad)
-        self.profesor_curso_programa = ProfesorCursoPrograma.obtener_por_id(id_profesor_curso_programa)
-        self.grupo = Grupo.obtener_por_id(id_grupo)
-        return self.grupo.estudiantes.all()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context['grupo'] = self.grupo
-        context['profesor_curso_programa'] = self.profesor_curso_programa
-        context['actividad'] = self.actividad
-
-        return context
-
-
 class CalificarEvaluacionesEstudiantes(FormView):
     template_name = 'evaluaciones/calificar_preguntas_estudiante.html'
 
     def dispatch(self, request, *args, **kwargs):
         id_actividad = self.kwargs.pop('id_actividad', 0)
-        id_estudiante = self.kwargs.pop('id_estudiante', 0)
         id_grupo = self.kwargs.pop('id_grupo', 0)
 
         self.actividad = Actividad.obtener_por_id(id_actividad)
-        self.estudiante = Usuario.obtener_por_id(id_estudiante)
         self.grupo = Grupo.obtener_por_id(id_grupo)
+        self.estudiantes = self.grupo.estudiantes.all()
+        self.calificaciones_cualitativas = CalificacionCualitativa.obtener_activos()
         self.preguntas = self.actividad.preguntas_asociadas.all()
-
-        self.formset_notas = self.get_formset_class()(form_kwargs={'estudiante':self.estudiante}, queryset=self.preguntas, prefix="pregunta")
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -81,71 +54,109 @@ class CalificarEvaluacionesEstudiantes(FormView):
             return NotaEstudianteCuantitativoForm
         return NotaEstudianteCualitativoForm
 
-    def get_formset_class(self):
-        if self.actividad.tipo_calificacion=='Cuantitativa':
-            return notas_cuantitativas_formset
-        return notas_cualitativas_formset
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['estudiante'] = self.estudiante
+        context['estudiantes'] = self.estudiantes
         context['preguntas'] = self.preguntas
         context['actividad'] = self.actividad
         context['grupo'] = self.grupo
-        context['formset'] = self.formset_notas
+        context['calificaciones_cualitativas'] = self.calificaciones_cualitativas
 
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['estudiantes'] = self.estudiantes
+        kwargs['preguntas'] = self.preguntas
 
-    def post(self, *args, **kwargs):
+        return kwargs
 
-        formset = self.get_formset_class()(self.request.POST, form_kwargs={'empty_permitted': False, 'estudiante':self.estudiante}, prefix="pregunta")
+    def get_initial(self):
+        initial = super().get_initial()
 
-        if formset.is_valid():
-            return self.form_valid(formset)
-        else:
-            errores = ''
-            for form in formset:
-                for _, errors in form.errors.items():
-                    print("#errores: ",errors)
-                    errores += ('{}'.format(','.join(errors)))
+        for estudiante in self.estudiantes:
+            for pregunta in self.preguntas:
+                if Nota.existe_por_estudiante_y_pregunta(estudiante.pk, pregunta.pk) is True:
 
-            print("# errores: ", errores)
-            return HttpResponseRedirect(self.request.path_info)
+                    if self.actividad.tipo_calificacion=='Cuantitativa':
+                        initial[f'{estudiante.pk}-{pregunta.pk}'] = Nota.obtener_por_estudiante_y_pregunta(estudiante.pk, pregunta.pk).resultado
+                    else:
+                        initial[f'{estudiante.pk}-{pregunta.pk}'] = Nota.obtener_por_estudiante_y_pregunta(estudiante.pk, pregunta.pk).calificacion_cualitativa
 
+        return initial
 
-    def form_valid(self, formset):
+    def form_valid(self, form):
         try:
-            for form in formset:
-                pregunta = form.save(commit=False)
+            calificacion_por_estudiante = dict(self.request.POST)
+            calificacion_por_estudiante.pop('DataTables_Table_0_length')
+            calificacion_por_estudiante.pop('csrfmiddlewaretoken')
+
+            ids_estudiantes = list(self.estudiantes.values_list('pk', flat=True))
+            ids_preguntas = list(self.preguntas.values_list('pk', flat=True))
+            ids_calificaciones_cualitativas = list(self.calificaciones_cualitativas.values_list('pk', flat=True))
+
+            print(calificacion_por_estudiante)
+            for estudiante_pregunta, calificaciones in calificacion_por_estudiante.items():
+                estudiante = int(estudiante_pregunta.split('-')[0])
+                pregunta = int(estudiante_pregunta.split('-')[1])
+                calificacion = int(calificaciones[0])
 
                 resultado = 0.0
                 calificacion_cualitativa = None
 
-                if self.actividad.tipo_calificacion=='Cuantitativa':
-                    resultado = form.cleaned_data['resultado']
+                print(f'{estudiante} -- {pregunta} --> {calificacion}')
+
+                if estudiante not in ids_estudiantes or pregunta not in ids_preguntas:
+                    # Error al asociar las preguntas, hay preguntas que no pertenecen a la actividad
+                    return self.form_invalid()
+
+                if self.actividad.tipo_calificacion=='Cualitativa' and calificacion not in ids_calificaciones_cualitativas:
+                    # Error al asociar las respuestas, hay respuestas que no pertenecen las  predeterminadas
+                    return self.form_invalid()
+
+                if self.actividad.tipo_calificacion=='Cuantitativa' and (calificacion<0 or calificacion>5):
+                    # Error al asociar las respuestas, hay valores que están fuera del rango(0.0 - 5.0)
+                    return self.form_invalid()
+
+                if self.actividad.tipo_calificacion=='Cualitativa':
+                    calificacion_cualitativa = CalificacionCualitativa.obtener_por_id(calificacion)
                 else:
-                    calificacion_cualitativa = form.cleaned_data['calificacion_cualitativa']
+                    resultado = calificacion
 
 
-                if Nota.existe_por_estudiante_y_pregunta(self.estudiante.pk, pregunta.pk) is True:
-                    nota = Nota.obtener_por_estudiante_y_pregunta(self.estudiante.pk, pregunta.pk)
+                if Nota.existe_por_estudiante_y_pregunta(estudiante, pregunta) is True:
+                    nota = Nota.obtener_por_estudiante_y_pregunta(estudiante, pregunta)
                     nota.resultado = resultado
                     nota.calificacion_cualitativa = calificacion_cualitativa
                     nota.save()
                 else:
                     Nota.objects.create(
                         calificacion_cualitativa = calificacion_cualitativa,
-                        pregunta = pregunta,
-                        estudiante = self.estudiante,
+                        pregunta = Pregunta.obtener_por_id(pregunta),
+                        estudiante = Usuario.obtener_por_id(estudiante),
                         resultado = resultado
                     )
-
-                pregunta.save()
-
             messages.success(self.request, "Calificaciones registradas correctamente")
+
+            return HttpResponseRedirect(self.request.path_info)
+
         except:
             messages.error(self.request, "Ha ocurrido un error al registrar las calificaciones")
         finally:
             return HttpResponseRedirect(self.request.path_info)
+
+
+
+def generar_excel_calificaciones(request, id_grupo: int , id_actividad: int):
+    import pandas as pd
+
+    grupo = Grupo.obtener_por_id(id_grupo)
+    actividad = Actividad.obtener_por_id(id_actividad)
+
+    preguntas = list(actividad.preguntas_asociadas.all().values_list('contenido', flat=True))
+    estudiantes = list(grupo.estudiantes.all().values_list('username', flat=True))
+
+    data_frame = pd.DataFrame(index=estudiantes, columns=preguntas)
+
+    print(data_frame.to_html())

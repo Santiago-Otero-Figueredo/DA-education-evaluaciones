@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.evaluaciones.views import CalificarEvaluacionesEstudiantes, EstudiantesPorEvaluacion, ListadoEvaluacionesProfesorCursoPrograma
+from apps.evaluaciones.views import CalificarEvaluacionesEstudiantes, ListadoEvaluacionesProfesorCursoPrograma, generar_excel_calificaciones
 
 
 app_name = "evaluaciones"
@@ -9,6 +9,7 @@ urlpatterns = [
         ListadoEvaluacionesProfesorCursoPrograma.as_view(),
         name='listado_actividades_por_profesor_curso_programa'
     ),
-    path("estudiantes-evaluacion/<int:id_profesor_curso_programa>/<int:id_grupo>/<int:id_actividad>", EstudiantesPorEvaluacion.as_view(), name='estudiantes_evaluacion'),
-    path("calificar-evaluaciones/<int:id_grupo>/<int:id_actividad>/<int:id_estudiante>", CalificarEvaluacionesEstudiantes.as_view(), name='calificar_evaluaciones'),
+    path("calificar-evaluaciones/<int:id_grupo>/<int:id_actividad>", CalificarEvaluacionesEstudiantes.as_view(), name='calificar_evaluaciones'),
+
+    path("generar-excel/<int:id_grupo>/<int:id_actividad>", generar_excel_calificaciones, name="generar_excel")
 ]

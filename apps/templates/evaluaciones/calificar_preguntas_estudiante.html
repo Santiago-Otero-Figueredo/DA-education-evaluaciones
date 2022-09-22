@@ -1,7 +1,7 @@
 {% extends "base_tablas.html" %}
 
 {% load bootstrap4 %}
-{% load tags_cursos %}
+{% load tags_notas %}
 
 {% block titulo %}
     Listado de preguntas de la evaluación: {{actividad.nombre}}
@@ -22,31 +22,33 @@
 
 {% block contenido_panel %}
     <form method="POST" class="row align-items-center">{% csrf_token %}
-        {{ formset.management_form }}
+
+        {% transforma_lista_a_matrix form.visible_fields estudiantes|length preguntas|length as matrix_preguntas %}
 
         <div class="mt-3">
             <table class="table table-hover datatable">
                 <thead>
                     <tr>
-                        <th>Pregunta</th>
-                        <th>Calificación</th>
+                        <th>Estudiante</th>
+                        {% for pregunta in preguntas %}
+                            <th>{{pregunta.numeracion}}.{{pregunta.contenido}}</th>
+                        {% endfor %}
                     </tr>
                 </thead>
                 <tbody>
-                    {% for form in formset %}
-                        <tr>
-                            <td>
-                                {{ form.instance.numeracion }}. {{form.instance.contenido}}
-                            </td>
-                            <td>
-                                {% bootstrap_form form show_label=False%}
-                                {{form.errors}}
-                            </td>
-                            {% for hidden in form.hidden_fields %}
-                                {{ hidden }}
-                            {% endfor %}
-                        </tr>
+                    {% for fila in matrix_preguntas %}
+                    <tr>
+                        {% obtener_id_estudiante fila.0.name as id_estudiante %}
+                        {% obtener_estudiante id_estudiante as estudiante %}
+                        <td>{{estudiante}}</td>
+                        {% for columna in fila %}
+                            <td>{{ columna }}</td>
+                        {% endfor %}
+                    </tr>
                     {% endfor %}
+
+
+
                 </tbody>
             </table>
         </div>
@@ -57,8 +59,8 @@
 
     </form>
     <div>
-        <a href="{% url 'evaluaciones:estudiantes_evaluacion' actividad.profesor_curso_programa.pk grupo.pk actividad.pk %}" class="btn btn-secondary">
-            Volver a estudiantes
+        <a href="{% url 'evaluaciones:listado_actividades_por_profesor_curso_programa' actividad.profesor_curso_programa.pk grupo.pk  %}" class="btn btn-secondary">
+            Volver a evaluaciones
         </a>
     </div>
 {% endblock contenido_panel %}
