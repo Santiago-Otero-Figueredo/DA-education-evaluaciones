@@ -62,3 +62,8 @@ class NotaEstudianteCuantitativoForm(PreguntaEstudianteForm):
 
                                         )
 
+
+class SubirArchivoForm(forms.Form):
+
+    archivo = forms.FileField()
+

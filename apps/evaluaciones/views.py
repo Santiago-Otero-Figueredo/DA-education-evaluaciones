@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 
 from django.views.generic import FormView, CreateView, ListView
 
-from apps.evaluaciones.forms import NotaEstudianteCualitativoForm, NotaEstudianteCuantitativoForm
+from apps.evaluaciones.forms import NotaEstudianteCualitativoForm, NotaEstudianteCuantitativoForm, SubirArchivoForm
 
 from apps.competencias.models import Grupo, ProfesorCursoPrograma
 from apps.evaluaciones.models import Actividad, CalificacionCualitativa, Nota, Pregunta
@@ -147,16 +148,95 @@ class CalificarEvaluacionesEstudiantes(FormView):
             return HttpResponseRedirect(self.request.path_info)
 
 
+class SubirArchivoCalificacionesForm(FormView):
+    form_class = SubirArchivoForm
+    template_name = 'evaluaciones/subir_calificaciones.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        id_actividad = self.kwargs.pop('id_actividad', 0)
+        id_grupo = self.kwargs.pop('id_grupo', 0)
+
+        self.actividad = Actividad.obtener_por_id(id_actividad)
+        self.grupo = Grupo.obtener_por_id(id_grupo)
+        self.estudiantes = self.grupo.estudiantes.all()
+        self.calificaciones_cualitativas = CalificacionCualitativa.obtener_activos()
+        self.preguntas = self.actividad.preguntas_asociadas.all()
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['actividad'] = self.actividad
+        context['grupo'] = self.grupo
+
+        return context
+
+    def form_valid(self, form):
+        import pandas as pd
+        archivo = form.cleaned_data['archivo']
+
+        calificaciones = pd.read_excel(
+            archivo,
+            index_col=0
+        )
+
+
+        preguntas_a_calificar = set(calificaciones.columns.to_list())
+        estudiantes_a_calificar = set(calificaciones.index.values.tolist())
+
+        estudiantes_en_el_grupo = set(self.estudiantes.values_list('codigo', flat=True))
+        preguntas_en_la_actividad = set(self.preguntas.values_list('contenido', flat=True))
+
+        print(calificaciones.to_string())
+
+        if len(estudiantes_en_el_grupo.intersection(estudiantes_a_calificar)) > 0:
+            messages.error(self.request, "Hay discrepancias entre los estudiantes del archivo y los estudiantes del grupo")
+            return self.form_invalid()
+
+        if 'nombre_completo' not in preguntas_a_calificar:
+            messages.error(self.request, "Falta la columna de nombre_completo")
+            return self.form_invalid()
+
+
+        preguntas_a_calificar.remove('nombre_completo')
+
+        lista_preguntas_incluidas = []
+        for a in preguntas_a_calificar:
+            lista_preguntas_incluidas.append(a in preguntas_en_la_actividad)
+
+
+        if all(lista_preguntas_incluidas) is False:
+            messages.error(self.request, "Hay discrepancias entre las preguntas del archivo y las de la actividad")
+            return self.form_invalid()
+
+
+        # if len(preguntas_a_calificar.intersection(preguntas_en_la_actividad)) > 0:
+        #     messages.error(self.request, "Falta la columna de nombre_completo")
+
+
+
+
+        raise NotImplementedError("HEY")
+        return super().form_valid(form)
 
 def generar_excel_calificaciones(request, id_grupo: int , id_actividad: int):
+    from django.db.models import CharField, Value
+    from django.db.models.functions import Concat
     import pandas as pd
 
     grupo = Grupo.obtener_por_id(id_grupo)
     actividad = Actividad.obtener_por_id(id_actividad)
 
     preguntas = list(actividad.preguntas_asociadas.all().values_list('contenido', flat=True))
-    estudiantes = list(grupo.estudiantes.all().values_list('username', flat=True))
+    estudiantes = list(grupo.estudiantes.all().annotate(
+        nombre_completo=Concat('first_name', Value(' '), 'last_name', output_field=CharField())
+    ).values_list('codigo', 'nombre_completo'))
 
-    data_frame = pd.DataFrame(index=estudiantes, columns=preguntas)
+    index = pd.MultiIndex.from_tuples(estudiantes, names=["codigo", "nombre_completo"])
+    data_frame = pd.DataFrame(index=index, columns=preguntas)
 
-    print(data_frame.to_html())
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="G_{grupo.nombre}_A_{actividad.nombre}.xlsx"'
+    data_frame.to_excel(response)
+    return response

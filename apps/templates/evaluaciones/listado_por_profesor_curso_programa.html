@@ -42,6 +42,12 @@
                             <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:calificar_evaluaciones' grupo.pk actividad.pk %}">
                                 Calificar estudiantes
                             </a>
+                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:generar_excel' grupo.pk actividad.pk %}">
+                                Generar excel
+                            </a>
+                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:subir_calificaciones' grupo.pk actividad.pk %}">
+                                Subir calificaciones
+                            </a>
                         </td>
                     </tr>
                 {% endfor %}

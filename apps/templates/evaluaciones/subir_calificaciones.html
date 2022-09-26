@@ -1,0 +1,37 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+
+{% block titulo %}
+    Listado de actividades para {{grupo}}
+{% endblock titulo %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Evaluaciones</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Listado de actividades para {{grupo}}</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">{{actividad}}</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Subir calificaciones</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_pagina %}
+    Listado de actividades para {{grupo}}
+{% endblock titulo_pagina %}
+
+{% block titulo_panel %}
+    Listado de actividades para {{grupo}}
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div>
+        <form method="POST" enctype="multipart/form-data">{% csrf_token %}
+            {% bootstrap_form form %}
+
+            <input type="submit" class="btn btn-info mb-2" value="Cargar calificaciones"/>
+        </form>
+    </div>
+    <div>
+        <a href="{% url 'evaluaciones:listado_actividades_por_profesor_curso_programa' actividad.profesor_curso_programa.pk grupo.pk %}" class="btn btn-secondary">
+            Volver a evaluaciones
+        </a>
+    </div>
+{% endblock contenido_panel %}
