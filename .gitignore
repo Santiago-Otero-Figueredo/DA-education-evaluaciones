@@ -19,3 +19,5 @@ tests
 .vscode
 
 *.rdb
+
+.ngrok.exe
