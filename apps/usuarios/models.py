@@ -1,11 +1,13 @@
+from pprint import pprint
 from django.db.models import Q, QuerySet
 
 from apps.core.models import ModeloBase
 
-from typing import List
+from typing import List, Optional
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 
 
 
@@ -48,6 +50,14 @@ class Usuario(AbstractUser, ModeloBase):
         ).distinct()
 
     @staticmethod
+    def obtener_estudiante_por_codigo(codigo: str) -> Optional['Usuario']:
+        try:
+            return Usuario.objects.get(codigo=codigo)
+        except Usuario.DoesNotExist:
+            return None
+
+
+    @staticmethod
     def crear(usuario, rol):
         from django.contrib.auth.models import Group
 
@@ -75,39 +85,47 @@ class Usuario(AbstractUser, ModeloBase):
 
         return usuario
 
-    def obtener_informacion_notas_estudiante(self, id_profesor_curso_programa:int, campos: List[str], agrupacion: List[str]):
-
-        return self.nota_de_estudiante_asociada.filter(
-            pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__profesor_curso_programa__pk=id_profesor_curso_programa
-        ).values(*campos).order_by(*agrupacion)
-
-    def obtener_respuestas_estudiante(self, id_profesor_curso_programa: int):
-        from apps.competencias.models import RestriccionNivelProfesorCurso
+    def obtener_informacion_notas_estudiante(self, id_profesor_curso_programa:int, campos: List[str], agrupacion: List[str], agrupacion_suma: List[str]) -> dict:
         import pandas as pd
 
-        consulta_respuestas = self.obtener_informacion_notas_estudiante(
-            id_profesor_curso_programa=id_profesor_curso_programa,
-            campos=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
-                    'calificacion_cualitativa__valor_numerico', 'resultado',
-                    'pregunta__porcentaje', 'pregunta__actividad'],
-            agrupacion=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk']
-        )
+        consulta_respuestas = self.nota_de_estudiante_asociada.filter(
+            pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__profesor_curso_programa__pk=id_profesor_curso_programa
+        ).values(*campos).order_by(*agrupacion)
 
         df_respuestas = pd.DataFrame(consulta_respuestas)
 
         df_respuestas = df_respuestas.fillna(0)
-
-        df_respuestas['calificaciones'] = df_respuestas['calificacion_cualitativa__valor_numerico'] +df_respuestas['resultado']
-        df_respuestas = df_respuestas.drop(columns=['calificacion_cualitativa__valor_numerico', 'resultado'])
-
+        df_respuestas['calificaciones'] = df_respuestas['calificacion_cualitativa__valor_maximo'] + df_respuestas['resultado']
+        df_respuestas = df_respuestas.drop(columns=['calificacion_cualitativa__valor_maximo', 'resultado'])
         df_respuestas['resultado_por_porcentaje'] = df_respuestas['calificaciones'] * df_respuestas['pregunta__porcentaje']
-        df_total_porcentaje = df_respuestas.groupby('pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk')['pregunta__porcentaje', 'resultado_por_porcentaje'].sum()
+
+        df_total_porcentaje = df_respuestas.groupby(
+            agrupacion_suma
+        )['pregunta__porcentaje', 'resultado_por_porcentaje'].sum()
+
         df_total_porcentaje['df_resultado_ponderado'] = df_total_porcentaje['resultado_por_porcentaje'] / df_total_porcentaje['pregunta__porcentaje']
         diccionario_calificaciones = df_total_porcentaje['df_resultado_ponderado'].to_dict()
+
+        return diccionario_calificaciones
+
+    def obtener_respuestas_estudiante(self, id_profesor_curso_programa: int):
+        from apps.competencias.models import RestriccionNivelProfesorCurso
+
+        diccionario_calificaciones = self.obtener_informacion_notas_estudiante(
+            id_profesor_curso_programa=id_profesor_curso_programa,
+            campos=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
+                    'calificacion_cualitativa__valor_maximo', 'resultado',
+                    'pregunta__porcentaje', 'pregunta__actividad'],
+            agrupacion=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk'],
+            agrupacion_suma=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk']
+        )
+
 
         diccionario_resumen = {}
         for calificacion, resultado in diccionario_calificaciones.items():
             diccionario_resumen[RestriccionNivelProfesorCurso.obtener_por_id(calificacion)] = round(resultado, 2)
+
+        pprint(diccionario_calificaciones)
         return diccionario_resumen
 
 
@@ -115,46 +133,72 @@ class Usuario(AbstractUser, ModeloBase):
         from apps.competencias.models import RestriccionNivelProfesorCurso
         from apps.evaluaciones.models import Actividad
 
-        import pandas as pd
-
-
-        consulta_respuestas = self.nota_de_estudiante_asociada.filter(
-            pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__profesor_curso_programa__pk=id_profesor_curso_programa
-        ).values(
-            'pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
-            'calificacion_cualitativa__valor_numerico', 'resultado',
-            'pregunta__porcentaje', 'pregunta__actividad'
-        ).order_by('pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk')
-
-        df_respuestas = pd.DataFrame(consulta_respuestas)
-
-        df_respuestas = df_respuestas.fillna(0)
-        df_respuestas['calificaciones'] = df_respuestas['calificacion_cualitativa__valor_numerico'] + df_respuestas['resultado']
-        df_respuestas = df_respuestas.drop(columns=['calificacion_cualitativa__valor_numerico', 'resultado'])
-        df_respuestas['resultado_por_porcentaje'] = df_respuestas['calificaciones'] * df_respuestas['pregunta__porcentaje']
-        print(df_respuestas.to_string())
-
-        df_total_porcentaje = df_respuestas.groupby(
-            ['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
+        diccionario_calificaciones = self.obtener_informacion_notas_estudiante(
+            id_profesor_curso_programa=id_profesor_curso_programa,
+            campos=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
+                    'calificacion_cualitativa__valor_maximo', 'resultado',
+                    'pregunta__porcentaje', 'pregunta__actividad'],
+            agrupacion=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk'],
+            agrupacion_suma=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
             'pregunta__actividad']
-        )['pregunta__porcentaje', 'resultado_por_porcentaje'].sum()
+        )
 
-        df_total_porcentaje['df_resultado_ponderado'] = df_total_porcentaje['resultado_por_porcentaje'] / df_total_porcentaje['pregunta__porcentaje']
 
-        diccionario_calificaciones = df_total_porcentaje['df_resultado_ponderado'].to_dict()
-        print(diccionario_calificaciones)
 
         diccionario_resumen = {}
         for calificacion, resultado in diccionario_calificaciones.items():
             calificacion_nivel = RestriccionNivelProfesorCurso.obtener_por_id(calificacion[0])
             if calificacion_nivel not in diccionario_resumen.keys():
-                diccionario_resumen[calificacion_nivel] = {}
+                diccionario_resumen[calificacion_nivel] = []
 
-            diccionario_resumen[calificacion_nivel].update({Actividad.obtener_por_id(calificacion[1]):round(resultado, 2)})
-        print(diccionario_resumen)
+            diccionario_resumen[calificacion_nivel].append(
+                    {Actividad.obtener_por_id(calificacion[1]):round(resultado, 2)}
+                )
 
-
+        pprint(diccionario_resumen)
         return diccionario_resumen
+
+
+    def obtener_respuestas_estudiante_por_pregunta(self, id_profesor_curso_programa: int):
+        from apps.competencias.models import RestriccionNivelProfesorCurso
+        from apps.evaluaciones.models import Actividad, Pregunta
+
+        diccionario_resultados = self.obtener_informacion_notas_estudiante(
+            id_profesor_curso_programa=id_profesor_curso_programa,
+            campos=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
+                    'calificacion_cualitativa__valor_maximo', 'resultado',
+                    'pregunta__porcentaje', 'pregunta__actividad', 'pregunta'],
+            agrupacion=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk'],
+            agrupacion_suma=['pregunta__restriccion_nivel_actividad__restriccion_nivel_profesor_curso__pk',
+            'pregunta__actividad', 'pregunta']
+        )
+
+
+
+        diccionario_resumen = {}
+        for calificacion, resultado in diccionario_resultados.items():
+            restriccion_nivel = RestriccionNivelProfesorCurso.obtener_por_id(calificacion[0])
+            if restriccion_nivel not in diccionario_resumen.keys():
+                diccionario_resumen[restriccion_nivel] = []
+
+            diccionario_calificaciones = {}
+            actividad = Actividad.obtener_por_id(calificacion[1])
+            if actividad not in diccionario_calificaciones.keys():
+                diccionario_calificaciones[actividad] = []
+
+            pregunta = Pregunta.obtener_por_id(calificacion[2])
+            diccionario_calificaciones[actividad].append(
+                {pregunta:round(resultado, 2)}
+            )
+
+            diccionario_resumen[restriccion_nivel].append(
+                diccionario_calificaciones
+            )
+
+
+        pprint(diccionario_resumen)
+
+        return diccionario_resultados
 
 
     def obtener_profesores_por_curso_del_programa(id_curso_del_programa: int) -> QuerySet['Usuario']:

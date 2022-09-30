@@ -1,3 +1,4 @@
+from typing import Optional
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -77,6 +78,14 @@ class Actividad(ModeloBase):
         return f'{self.profesor_curso_programa} - {self.tipo_actividad} - {self.tipo_calificacion} - {self.nombre}'
 
 
+    def obtener_actividad_por_contenido(self, contenido: str) -> Optional['Pregunta']:
+        try:
+            return self.preguntas_asociadas.get(
+                contenido=contenido
+            )
+        except Pregunta.DoesNotExist:
+            return None
+
 class Pregunta(ModeloBase):
     actividad = models.ForeignKey(
         Actividad,
@@ -106,13 +115,29 @@ class Pregunta(ModeloBase):
 
 class CalificacionCualitativa(ModeloBase):
     nombre = models.CharField(max_length=25, verbose_name="Nombre que tiene esta calificación (Excelente, sobresaliente, etc)")
-    valor_numerico = models.FloatField(
+    valor_minimo = models.FloatField(
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
-        verbose_name="Valor numérico asociado a esta calificación cuantitativa"
+        verbose_name="Valor numérico mínimo asociado a esta calificación cuantitativa"
+    )
+    valor_maximo = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
+        verbose_name="Valor numérico máximo asociado a esta calificación cuantitativa"
     )
 
     def __str__(self):
-        return f'{self.valor_numerico} - {self.nombre}'
+        return f'[{self.valor_minimo} : {self.valor_maximo}]- {self.nombre}'
+
+    @staticmethod
+    def obtener_calificacion_por_numero(calificacion: float) -> Optional['CalificacionCualitativa']:
+        """ Retorna la calificación cualitativa que se debe asignar según el rango al que pertenezca la calificación
+        recibida como parámetro"""
+        try:
+            return CalificacionCualitativa.objects.get(
+                valor_maximo__gte=calificacion,
+                valor_minimo__lte=calificacion
+            )
+        except:
+            return None
 
 class Nota(ModeloBase):
     calificacion_cualitativa = models.ForeignKey(

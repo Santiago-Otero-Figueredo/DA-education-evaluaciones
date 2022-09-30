@@ -36,7 +36,7 @@
                 <tr>
                     <th>Nombre</th>
                     <th>Código</th>
-                    <th></th>
+                    <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,7 +48,7 @@
                         <td>
                             {{curso.codigo}}
                         </td>
-                        <td>
+                        <td class="text-center">
                             {% obtener_por_curso_programa_id curso.pk programa.pk as curso_del_programa %}
                             {% obtener_por_curso_programa_y_periodo_academico curso_del_programa.pk periodo_academico.pk as profesor_curso_programa%}
                             <a class="btn btn-xs btn-info mt-1" href="{% url 'competencias:listado_grupos_por_profesor_curso_programa' profesor_curso_programa.pk  %}">

@@ -1,0 +1,47 @@
+{% extends "base_tablas.html" %}
+
+{% load bootstrap4 %}
+
+{% block titulo %}
+    Resumen calificaciones
+{% endblock %}
+
+{% block titulo_pagina %}
+    Resumen calificaciones
+{% endblock titulo_pagina %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Reportes</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Resumen calificaciones</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_panel %}
+    Resumen calificaciones
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div class="row">
+
+        <div class="col-8 my-2">
+            A continuación se muestran las calificaciones obtenidas por el estudiante <b>{{estudiante}}</b> en cada competencia en el curso de <b>{{ curso }}</b>
+        </div>
+        <div class="col-4 my-2">
+            <a class="btn btn-xs btn-secondary mt-1" href="{% url 'dashboards:cursos_estudiante' estudiante.pk %}">
+                Volver a cursos estudiante
+            </a>
+        </div>
+        <hr>
+        <form method="GET" class="row mb-3">
+            <div class="col-6">
+                {% bootstrap_form form %}
+            </div>
+            <div class="col-1">
+                <input type="submit" value="Filtrar" class="btn btn-sm btn-info">
+            </div>
+        </form>
+    </div>
+    <div class="contenedor-tabla">
+        {% block tabla%}{% endblock tabla%}
+    </div>
+
+{% endblock contenido_panel %}

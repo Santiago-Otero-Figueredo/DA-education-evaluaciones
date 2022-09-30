@@ -26,7 +26,7 @@
                 <tr>
                     <th>Tipo evaluación</th>
                     <th>Nombre</th>
-                    <th></th>
+                    <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,16 +38,17 @@
                         <td>
                             {{actividad.nombre}}
                         </td>
-                        <td>
+                        <td class="text-center">
                             <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:calificar_evaluaciones' grupo.pk actividad.pk %}">
-                                Calificar estudiantes
-                            </a>
-                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:generar_excel' grupo.pk actividad.pk %}">
-                                Generar excel
+                                Ver calificaciones
                             </a>
                             <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:subir_calificaciones' grupo.pk actividad.pk %}">
                                 Subir calificaciones
                             </a>
+                            <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:generar_excel' grupo.pk actividad.pk %}">
+                                Generar excel
+                            </a>
+
                         </td>
                     </tr>
                 {% endfor %}

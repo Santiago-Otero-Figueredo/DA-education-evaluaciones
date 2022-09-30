@@ -1,3 +1,4 @@
+from email.policy import default
 from django import forms
 
 from django_select2.forms import  Select2Widget, ModelSelect2MultipleWidget, ModelSelect2Widget
@@ -91,3 +92,11 @@ class FiltroProgramaForm(forms.Form):
 
         self.fields["programa"].queryset = Programa.obtener_programas_por_estudiante(id_estudiante)
         self.fields["programa"].initial = self.fields["programa"].queryset.first()
+
+
+class FiltroCalificacionesPorActividadForm(forms.Form):
+
+    mostrar_actividad = forms.BooleanField(
+        required=False,
+        label="Mostrar calificaciones por actividad"
+    )

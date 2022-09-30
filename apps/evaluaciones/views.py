@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 
 from django.views.generic import FormView, CreateView, ListView
 
@@ -164,6 +165,16 @@ class SubirArchivoCalificacionesForm(FormView):
 
         return super().dispatch(request, *args, **kwargs)
 
+    def get_success_url(self) -> str:
+        kwargs = {
+            'id_profesor_curso_programa':self.actividad.profesor_curso_programa.pk,
+            'id_grupo':self.grupo.pk,
+        }
+        return reverse_lazy(
+            'evaluaciones:listado_actividades_por_profesor_curso_programa',
+            kwargs=kwargs
+        )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -173,12 +184,15 @@ class SubirArchivoCalificacionesForm(FormView):
         return context
 
     def form_valid(self, form):
+        from apps.evaluaciones.utils import cargar_calificaciones
         import pandas as pd
+        import numpy as np
         archivo = form.cleaned_data['archivo']
 
         calificaciones = pd.read_excel(
             archivo,
-            index_col=0
+            index_col=[0, 1],
+            engine='openpyxl'
         )
 
 
@@ -188,18 +202,12 @@ class SubirArchivoCalificacionesForm(FormView):
         estudiantes_en_el_grupo = set(self.estudiantes.values_list('codigo', flat=True))
         preguntas_en_la_actividad = set(self.preguntas.values_list('contenido', flat=True))
 
-        print(calificaciones.to_string())
+        calificaciones = calificaciones.fillna(0)
 
         if len(estudiantes_en_el_grupo.intersection(estudiantes_a_calificar)) > 0:
             messages.error(self.request, "Hay discrepancias entre los estudiantes del archivo y los estudiantes del grupo")
-            return self.form_invalid()
+            return self.form_invalid(form)
 
-        if 'nombre_completo' not in preguntas_a_calificar:
-            messages.error(self.request, "Falta la columna de nombre_completo")
-            return self.form_invalid()
-
-
-        preguntas_a_calificar.remove('nombre_completo')
 
         lista_preguntas_incluidas = []
         for a in preguntas_a_calificar:
@@ -208,17 +216,35 @@ class SubirArchivoCalificacionesForm(FormView):
 
         if all(lista_preguntas_incluidas) is False:
             messages.error(self.request, "Hay discrepancias entre las preguntas del archivo y las de la actividad")
-            return self.form_invalid()
+            return self.form_invalid(form)
+
+        try:
+            calificaciones.astype(float)
+        except Exception:
+           messages.error(self.request, "Hay notas que no son números")
+           return self.form_invalid(form)
+
+        estado_calificaciones = calificaciones.gt(5.0)
+        estado_calificaciones.astype(int)
+        calificaciones_incorrectas = estado_calificaciones[estado_calificaciones > 0].stack().index.tolist()
+
+        if len(calificaciones_incorrectas) > 0:
+            messages.error(self.request, "Hay notas que están fuera de los rangos permitidos (0.0-5.0)")
+            return self.form_invalid(form)
+
+        calificaciones.reset_index(level='nombre_completo', inplace=True)
+        calificaciones.drop('nombre_completo', axis=1, inplace=True)
 
 
-        # if len(preguntas_a_calificar.intersection(preguntas_en_la_actividad)) > 0:
-        #     messages.error(self.request, "Falta la columna de nombre_completo")
+        try:
+            calificaciones.apply(cargar_calificaciones, actividad=self.actividad)
+            messages.success(self.request, "Se cargaron las calificaciones correctamente")
+            return super().form_valid(form)
+        except Exception as e:
+            print("ERROR: ", e)
+            messages.error(self.request, "Se produjo un error al cargar las calificaciones")
+            return self.form_invalid(form)
 
-
-
-
-        raise NotImplementedError("HEY")
-        return super().form_valid(form)
 
 def generar_excel_calificaciones(request, id_grupo: int , id_actividad: int):
     from django.db.models import CharField, Value

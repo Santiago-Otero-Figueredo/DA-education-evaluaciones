@@ -1,6 +1,6 @@
 from django import template
 
-from apps.evaluaciones.models import Nota
+from apps.evaluaciones.models import CalificacionCualitativa, Nota
 from apps.usuarios.models import Usuario
 
 register = template.Library()
@@ -28,3 +28,7 @@ def obtener_id_estudiante(value: str):
 @register.simple_tag
 def obtener_estudiante(id_estudiante: int):
     return Usuario.obtener_por_id(id_estudiante)
+
+@register.simple_tag
+def obtener_calificacion_cualitativa(id_calificacion: int):
+    return CalificacionCualitativa.obtener_por_id(id_calificacion)

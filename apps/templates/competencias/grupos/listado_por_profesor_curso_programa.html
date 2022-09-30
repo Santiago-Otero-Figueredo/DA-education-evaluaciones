@@ -26,7 +26,7 @@
                 <tr>
                     <th>Nombre</th>
                     <th>Cantidad estudiantes</th>
-                    <th></th>
+                    <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,7 +38,7 @@
                         <td>
                             {{grupo.obtener_estudiantes|length }}
                         </td>
-                        <td>
+                        <td class="text-center">
                             <a class="btn btn-xs btn-info px-3" href="{% url 'evaluaciones:listado_actividades_por_profesor_curso_programa' profesor_curso_programa.pk grupo.pk %}">
                                 Consultar evaluaciones
                             </a>

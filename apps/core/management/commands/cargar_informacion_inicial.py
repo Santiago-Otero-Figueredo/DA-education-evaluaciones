@@ -451,12 +451,15 @@ def cargar_calificaciones_cualitativas(handle):
         for i in range(2, worksheet.max_row + 1):
             id = int(worksheet[i][0].value)
             nombre = str(worksheet[i][1].value)
-            valor_numerico = float(worksheet[i][2].value)
+            valor_minimo = float(worksheet[i][2].value)
+            valor_maximo = float(worksheet[i][3].value)
+
 
             CalificacionCualitativa.objects.create(
                 id=id,
                 nombre=nombre,
-                valor_numerico=valor_numerico
+                valor_minimo=valor_minimo,
+                valor_maximo=valor_maximo
             )
 
 
@@ -555,16 +558,10 @@ def generar_notas_automaticamente(handle):
                     calificacion_cualitativa = None
                     resultado = random.randint(100, 500) / 100
                     if pregunta.actividad.tipo_calificacion == "Cualitativa":
-                        if resultado == 5.0:
-                            calificacion_cualitativa = CalificacionCualitativa.objects.get(nombre='Excelente')
-                        elif resultado > 4.0 and resultado < 4.99:
-                            calificacion_cualitativa = CalificacionCualitativa.objects.get(nombre='Sobresaliente')
-                        elif resultado > 3.0 and resultado < 3.99:
-                            calificacion_cualitativa = CalificacionCualitativa.objects.get(nombre='Aceptable')
-                        elif resultado > 2.0 and resultado < 2.99:
-                            calificacion_cualitativa = CalificacionCualitativa.objects.get(nombre='Insuficiente')
-                        else:
+                        calificacion_cualitativa = CalificacionCualitativa.obtener_calificacion_por_numero(resultado)
+                        if calificacion_cualitativa is None:
                             calificacion_cualitativa = CalificacionCualitativa.objects.get(nombre='Deficiente')
+
                         resultado = 0.0
 
 

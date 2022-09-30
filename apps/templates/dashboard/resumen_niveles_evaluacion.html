@@ -33,11 +33,11 @@
     </div>
     <form method="GET">
         <hr>
-        <div class="row">
-            <div class="col-3">
+        <div class="row align-items-center">
+            <div class="col-2">
                 {% bootstrap_field form.ano %}
             </div>
-            <div class="col-3">
+            <div class="col-2">
                 {% bootstrap_field form.periodo_academico %}
             </div>
             <div class="col-3">
@@ -46,46 +46,66 @@
             <div class="col-3">
                 {% bootstrap_field form.profesor %}
             </div>
+            <div class="col-2">
+                <input type="submit" class="btn btn-md btn-info" value="Filtrar">
+            </div>
         </div>
         <hr>
 
-        <div class="col-3">
-            <input type="submit" class="btn btn-md btn-info" value="Filtrar">
-        </div>
+
     </form>
     <div class="contenedor-tabla mt-3">
         {% if niveles_evaluacion %}
-            <table class="table table-bordered table-striped table-td-valign-middle display tabla-fix">
+            <table class="table table-bordered">
                 <thead>
-                <tr>
-                    {% for tipo_nivel in tipos %}
-                        {% if tipo_nivel.counter == tipos|length %}
-                            <th>%RA</th>
-                        {% endif %}
-                        <th>{{tipo_nivel}}</th>
-                    {% endfor %}
-                    {% if profesor %}
-                        <th>%IL</th>
-                    {% endif %}
-                </tr>
-                </thead>
-                <tbody>
-                    {% for nivel in niveles_evaluacion %}
-                        {% for sub_nivel in nivel.sub_niveles_evaluacion.all %}
-                            {% for sub_sub_nivel in sub_nivel.sub_niveles_evaluacion.all %}
-                                <tr>
-                                    <td>{{ nivel.obtener_descripcion_completa }}</td>
-                                    <td>{{ sub_nivel.obtener_descripcion_completa }}</td>
-                                    {% if sub_nivel.mide_porcentaje %}
-                                        <td>{{ sub_nivel.porcentaje }}%</td>
-                                    {% endif %}
-                                    <td>{{ sub_sub_nivel.obtener_descripcion_completa }}</td>
-                                    {% if profesor %}
-                                        <th>{% obtener_porcentajes_curso_programa sub_sub_nivel.pk profesor_curso_del_programa.pk %}%</th>
-                                    {% endif %}
-                                </tr>
-                            {% endfor %}
+                    <tr>
+                        {% for tipo_nivel in tipos %}
+                            <th>{{tipo_nivel.nombre}}. {{tipo_nivel.descripcion}}</th>
+                            {% if tipo_nivel.niveles_evaluacion_asociados.all.1.mide_porcentaje %}
+                                <th>%{{tipo_nivel.nombre}}</th>
+                            {% endif %}
                         {% endfor %}
+                        {% if profesor %}
+                            <th>%IL</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody class="text-left" style="vertical-align: middle;">
+                    {% for nivel in niveles_evaluacion %}
+
+                            {% if nivel.es_elemento_raiz %}
+                                <tr>
+                                    <td rowspan=" {{ nivel.cantidad_hijos_hoja }}">
+                                        {{nivel.nombre}}. {{nivel.descripcion}}
+                                    </td>
+                            {% endif %}
+                            {% for sub_nivel in nivel.informacion_hijos %}
+                                {% if sub_nivel.es_primer_elemento and not nivel.es_elemento_raiz %}
+                                    <tr>
+                                {% endif %}
+                                <td rowspan=" {{ sub_nivel.cantidad_hijos_hoja }}">
+                                    {{sub_nivel.nombre}}. {{sub_nivel.descripcion}}
+                                </td>
+                                {% if sub_nivel.mide_porcentaje %}
+                                    <td rowspan=" {{ sub_nivel.cantidad_hijos_hoja }}">
+                                        {{sub_nivel.porcentaje}}
+                                    </td>
+                                {% endif %}
+                                {% for nivel_hoja in sub_nivel.informacion_hijos %}
+                                    {% if not nivel.es_elemento_raiz and not sub_nivel.es_primer_elemento %}
+                                        <tr>
+                                    {% endif %}
+                                        <td>
+                                            {{nivel_hoja.nombre}}. {{nivel_hoja.descripcion}}
+                                        </td>
+                                        {% if profesor %}
+                                            <td> {% obtener_porcentajes_curso_programa nivel_hoja.pk profesor_curso_del_programa.pk %}% </td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            {% endfor %}
+
                     {% endfor %}
                 </tbody>
             </table>

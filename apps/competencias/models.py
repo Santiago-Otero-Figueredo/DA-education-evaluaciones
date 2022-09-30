@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from apps.evaluaciones.models import Actividad
 
 
+def sumar_cantidad_hijos_hoja(informacion_hijos: List) -> int:
+
+    return sum(d['cantidad_hijos_hoja'] for d in informacion_hijos)
+
 class TipoNivelEvaluacion(ModeloBase):
     """
         Este modelo hace referencia a los tipos de niveles de evaluación que puede tener una institución educativa. Son las
@@ -40,7 +44,7 @@ class TipoNivelEvaluacion(ModeloBase):
         ordering = ['nivel']
 
     def __str__(self):
-        return self.nombre
+        return f'{self.nombre}. {self.descripcion}'
 
     @staticmethod
     def obtener_ultimo_tipo():
@@ -121,11 +125,84 @@ class NivelEvaluacion(ModeloBase):
         )
 
     @staticmethod
-    def obtener_por_curso_del_programa_y_periodo_academico(id_curso_programa: int, id_periodo_academico: int) -> Optional['NivelEvaluacion']:
+    def obtener_por_curso_del_programa_y_periodo_academico(id_curso_programa: int, id_periodo_academico: int) -> QuerySet['NivelEvaluacion']:
         return NivelEvaluacion.objects.filter(
             curso_del_programa__pk=id_curso_programa,
             curso_del_programa__profesor_curso_programa_asociados__periodo_academico__pk=id_periodo_academico
         )
+
+
+    @staticmethod
+    def obtener_informacion_niveles_raiz_formato_json(id_curso_programa: int, id_periodo_academico: int) -> dict:
+        niveles_evaluacion = NivelEvaluacion.objects.filter(
+            nivel_asociado__isnull=True,
+            curso_del_programa__pk=id_curso_programa,
+            curso_del_programa__profesor_curso_programa_asociados__periodo_academico__pk=id_periodo_academico
+        )
+
+        listado_niveles = []
+        for index, nivel_evaluacion in enumerate(niveles_evaluacion):
+            informacion_hijos = nivel_evaluacion.obtener_informacion_niveles_hijos_formato_json()
+            listado_niveles.append(
+                {
+                    'es_primer_elemento': (index==0),
+                    'es_elemento_raiz': True,
+                    'nombre': nivel_evaluacion.nombre,
+                    'descripcion': nivel_evaluacion.descripcion,
+                    'mide_porcentaje': nivel_evaluacion.mide_porcentaje,
+                    'porcentaje': nivel_evaluacion.porcentaje,
+                    'cantidad_hijos_hoja': sumar_cantidad_hijos_hoja(informacion_hijos),
+                    'informacion_hijos': informacion_hijos
+                }
+            )
+
+
+        return listado_niveles
+
+
+
+    def obtener_informacion_niveles_hijos_formato_json(self) -> dict:
+
+        niveles_hijos = self.sub_niveles_evaluacion.all()
+
+        listado_niveles = []
+        for index, nivel_evaluacion in enumerate(niveles_hijos):
+            listado_niveles.append(
+                {
+                    'es_primer_elemento': (index==0),
+                    'es_elemento_raiz': False,
+                    'nombre': nivel_evaluacion.nombre,
+                    'descripcion': nivel_evaluacion.descripcion,
+                    'mide_porcentaje': nivel_evaluacion.mide_porcentaje,
+                    'porcentaje': nivel_evaluacion.porcentaje,
+                    'cantidad_hijos_hoja': len(nivel_evaluacion.obtener_informacion_niveles_hijos_formato_json()),
+                    'informacion_hijos': nivel_evaluacion.obtener_informacion_niveles_hijos_formato_json(),
+                    'pk': nivel_evaluacion.pk
+                }
+            )
+
+
+        return listado_niveles
+
+
+    def obtener_cantidad_total_hijos_hoja(self, cantidad=0) -> dict:
+
+
+        if self.sub_niveles_evaluacion.all().count() == 0:
+            return  0
+        else:
+            #cantidad += self.sub_niveles_evaluacion.all().count()
+            for nivel in self.sub_niveles_evaluacion.all():
+                cantidad += nivel.sub_niveles_evaluacion.all().count()
+                nivel.obtener_cantidad_total_hijos_hoja(cantidad)
+
+            return cantidad
+
+
+
+
+
+
 
 
 

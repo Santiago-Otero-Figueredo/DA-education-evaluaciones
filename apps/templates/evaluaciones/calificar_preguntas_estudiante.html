@@ -26,7 +26,7 @@
         {% transforma_lista_a_matrix form.visible_fields estudiantes|length preguntas|length as matrix_preguntas %}
 
         <div class="mt-3">
-            <table class="table table-hover datatable">
+            <table class="table table-hover datatable"  data-page-length='15' id="tabla-estudiantes">
                 <thead>
                     <tr>
                         <th>Estudiante</th>
@@ -37,30 +37,39 @@
                 </thead>
                 <tbody>
                     {% for fila in matrix_preguntas %}
-                    <tr>
-                        {% obtener_id_estudiante fila.0.name as id_estudiante %}
-                        {% obtener_estudiante id_estudiante as estudiante %}
-                        <td>{{estudiante}}</td>
-                        {% for columna in fila %}
-                            <td>{{ columna }}</td>
-                        {% endfor %}
-                    </tr>
+                        <tr>
+                            {% obtener_id_estudiante fila.0.name as id_estudiante %}
+                            {% obtener_estudiante id_estudiante as estudiante %}
+                            <td>{{estudiante}}</td>
+                            {% for columna in fila %}
+                                {% if actividad.tipo_calificacion == 'Cualitativa' %}
+                                    {% obtener_calificacion_cualitativa columna.value as calificacion%}
+                                    <td class="text-left">{{ calificacion.nombre }}</td>
+                                {% else %}
+                                    <td class="text-left">{{ columna.value }}</td>
+
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
                     {% endfor %}
-
-
-
                 </tbody>
             </table>
         </div>
-        <div class="row col-12 justify-content-center mb-3">
-            <button class="btn btn-sm btn-success px-4">Registrar calificaciones</button>
-        </div>
+
 
 
     </form>
-    <div>
-        <a href="{% url 'evaluaciones:listado_actividades_por_profesor_curso_programa' actividad.profesor_curso_programa.pk grupo.pk  %}" class="btn btn-secondary">
+    <div class="row justify-content-between mt-3">
+        <a href="{% url 'evaluaciones:listado_actividades_por_profesor_curso_programa' actividad.profesor_curso_programa.pk grupo.pk  %}" class="col-2 btn btn-secondary">
             Volver a evaluaciones
         </a>
+        <button class="col-2 btn btn-sm btn-success px-4">Registrar calificaciones</button>
     </div>
 {% endblock contenido_panel %}
+
+{% block js %}
+    {{block.super}}
+    <script>
+
+    </script>
+{% endblock js%}

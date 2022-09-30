@@ -7,7 +7,7 @@ from apps.periodos_academicos.models import PeriodoAcademico
 from apps.programas.models import Programa
 from apps.cursos.models import Curso, CursoDelPrograma
 
-from apps.dashboards.forms import FiltroPeriodoProgramaForm, FiltroNivelesEvaluacionPorProfesorForm, FiltroProgramaForm
+from apps.dashboards.forms import FiltroPeriodoProgramaForm, FiltroNivelesEvaluacionPorProfesorForm, FiltroProgramaForm, FiltroCalificacionesPorActividadForm
 from apps.usuarios.models import Usuario
 
 class Inicio(TemplateView):
@@ -98,6 +98,8 @@ class ResumenNivelesEvaluacionPorProfesor(FormView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
 
+        from pprint import pprint
+
         context['periodo_academico'] = self.periodo_academico
         context['ano'] = self.ano
         context['programa'] = self.programa
@@ -105,17 +107,24 @@ class ResumenNivelesEvaluacionPorProfesor(FormView):
         context['tipos'] = TipoNivelEvaluacion.obtener_activos()
         context['profesor_curso_del_programa'] = self.profesor_curso_del_programa
 
-        if self.profesor == 0 or self.profesor == '':
-            niveles_evaluacion = NivelEvaluacion.obtener_por_curso_del_programa_y_periodo_academico(
-                id_curso_programa=self.curso_del_programa,
-                id_periodo_academico=self.periodo_academico
-            )
-        else:
-            niveles_evaluacion = NivelEvaluacion.obtener_nivel_evaluacion_por_curso_del_programa_periodo_profesor(
-                id_curso_programa=self.curso_del_programa,
-                id_periodo_academico=self.periodo_academico,
-                id_profesor=self.profesor
-            )
+        # if self.profesor == 0 or self.profesor == '':
+        #     niveles_evaluacion = NivelEvaluacion.obtener_por_curso_del_programa_y_periodo_academico(
+        #         id_curso_programa=self.curso_del_programa,
+        #         id_periodo_academico=self.periodo_academico
+        #     )
+        # else:
+        #     niveles_evaluacion = NivelEvaluacion.obtener_nivel_evaluacion_por_curso_del_programa_periodo_profesor(
+        #         id_curso_programa=self.curso_del_programa,
+        #         id_periodo_academico=self.periodo_academico,
+        #         id_profesor=self.profesor
+        #     )
+
+        niveles_evaluacion = NivelEvaluacion.obtener_informacion_niveles_raiz_formato_json(
+            id_curso_programa=self.curso_del_programa,
+            id_periodo_academico=self.periodo_academico
+        )
+
+        pprint(niveles_evaluacion)
 
         context['niveles_evaluacion'] = niveles_evaluacion
 
@@ -138,41 +147,39 @@ class ResumenNivelesEvaluacionPorProfesor(FormView):
         return kwargs
 
 
-class ResumenCalificaciones(ListView):
+class ResumenCalificaciones(FormView):
     model = Reporte
+    form_class = FiltroCalificacionesPorActividadForm
     context_object_name = "respuestas"
     template_name = "dashboard/resumen_calificaciones.html"
 
-
-    def get_queryset(self):
-        id_estudiante = self.kwargs.pop('id_estudiante', 0)
-        id_profesor_curso_programa = self.kwargs.pop('id_profesor_curso_programa', 0)
-        self.curso = ProfesorCursoPrograma.obtener_por_id(id_profesor_curso_programa).curso_programa.curso
-        self.estudiante = Usuario.obtener_por_id(id_estudiante)
-        return self.estudiante.obtener_respuestas_estudiante(id_profesor_curso_programa)
-
-
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-
-        context['tipo'] = TipoNivelEvaluacion.obtener_ultimo_tipo()
-        context['curso'] = self.curso
-        context['estudiante'] = self.estudiante
-
-        return context
-
-class ResumenCalificacionesPorEvaluacion(ListView):
-    model = Reporte
-    context_object_name = "respuestas"
-    template_name = "dashboard/resumen_calificaciones_por_evaluaciones.html"
-
-
-    def get_queryset(self):
+    def dispatch(self, request, *args, **kwargs):
+        import json
+        print(dict(request.GET))
+        self.mostrar_actividades = dict(request.GET).get('mostrar_actividad', False)
         id_estudiante = self.kwargs.pop('id_estudiante', 0)
         self.id_profesor_curso_programa = self.kwargs.pop('id_profesor_curso_programa', 0)
         self.curso = ProfesorCursoPrograma.obtener_por_id(self.id_profesor_curso_programa).curso_programa.curso
         self.estudiante = Usuario.obtener_por_id(id_estudiante)
-        return self.estudiante.obtener_respuestas_estudiante_por_evaluacion(self.id_profesor_curso_programa)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        if self.mostrar_actividades:
+            return self.estudiante.obtener_respuestas_estudiante_por_evaluacion(self.id_profesor_curso_programa)
+        return self.estudiante.obtener_respuestas_estudiante(self.id_profesor_curso_programa)
+
+
+    def get_template_names(self):
+
+        if self.mostrar_actividades:
+            return "dashboard/resumen_calificaciones_por_evaluaciones.html"
+
+        return super().get_template_names()
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['mostrar_actividad'] = self.mostrar_actividades
+        return initial
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -180,8 +187,10 @@ class ResumenCalificacionesPorEvaluacion(ListView):
         context['tipo'] = TipoNivelEvaluacion.obtener_ultimo_tipo()
         context['curso'] = self.curso
         context['estudiante'] = self.estudiante
-        context['id_profesor_curso_programa'] = self.id_profesor_curso_programa
+        context['respuestas'] = self.get_queryset()
+
         return context
+
 
 
 class CursosPorEstudiante(FormView):

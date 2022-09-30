@@ -1,50 +1,22 @@
-{% extends "base_tablas.html" %}
+{% extends "dashboard/resumen_calificaciones_base.html" %}
 
-{% block titulo %}
-    Resumen calificaciones
-{% endblock %}
 
-{% block titulo_pagina %}
-    Resumen calificaciones
-{% endblock titulo_pagina %}
+{% block tabla%}
+    <table class="table table-bordered table-striped table-td-valign-middle display tabla-fix">
+        <thead>
+        <tr>
+            <th>{{tipo}}</th>
+            <th>Calificación</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for respuesta, resultado in respuestas.items %}
+                <tr>
+                    <td>{{ respuesta.nivel_evaluacion.obtener_descripcion_completa }}</td>
+                    <td>{{ resultado|floatformat:2 }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock tabla%}
 
-{% block miga_pan %}
-    <li class="breadcrumb-item"><a href="javascript:;">Reportes</a></li>
-    <li class="breadcrumb-item active"><a href="javascript:;">Resumen calificaciones</a></li>
-{% endblock miga_pan %}
-
-{% block titulo_panel %}
-    Resumen calificaciones
-{% endblock titulo_panel %}
-
-{% block contenido_panel %}
-    <div class="row">
-        <div class="col-8 my-2">
-            A continuación se muestran las calificaciones obtenidas por el estudiante <b>{{estudiante}}</b> en cada competencia en el curso de <b>{{ curso }}</b>
-        </div>
-        <div class="col-4 my-2">
-            <a class="btn btn-xs btn-secondary mt-1" href="{% url 'usuarios:listado_estudiantes' %}">
-                Volver a listado estudiantes
-            </a>
-        </div>
-    </div>
-    <div class="contenedor-tabla">
-        <table class="table table-bordered table-striped table-td-valign-middle display tabla-fix">
-            <thead>
-            <tr>
-                <th>{{tipo}}</th>
-                <th>Calificación</th>
-            </tr>
-            </thead>
-            <tbody>
-                {% for respuesta, resultado in respuestas.items %}
-                    <tr>
-                        <td>{{ respuesta.nivel_evaluacion.obtener_descripcion_completa }}</td>
-                        <td>{{ resultado|floatformat:2 }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-{% endblock contenido_panel %}

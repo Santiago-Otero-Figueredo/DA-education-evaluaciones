@@ -1,0 +1,101 @@
+{% extends "base_tablas.html" %}
+
+{% load tags_niveles_evaluacion %}
+
+{% load static %}
+{% load bootstrap4 %}
+
+{% block titulo %}
+    Resumen niveles evaluación
+{% endblock %}
+
+{% block titulo_pagina %}
+    Resumen niveles evaluación
+{% endblock titulo_pagina %}
+
+{% block miga_pan %}
+    <li class="breadcrumb-item"><a href="javascript:;">Reportes</a></li>
+    <li class="breadcrumb-item active"><a href="javascript:;">Resumen niveles evaluación</a></li>
+{% endblock miga_pan %}
+
+{% block titulo_panel %}
+    Resumen niveles evaluación
+{% endblock titulo_panel %}
+
+{% block contenido_panel %}
+    <div class="row">
+        <div class="col-8 my-2">
+            A continuación se muestra la información de las competencias a evaluar en el curso de <b>{{ curso }}</b>
+        </div>
+        <div class="col-4 mt-2">
+            <a class="btn btn-xs btn-secondary text-left" href="{% url 'dashboards:evaluacion_cursos' %}">Volver a evaluación cursos</a>
+        </div>
+    </div>
+    <form method="GET">
+        <hr>
+        <div class="row align-items-center">
+            <div class="col-2">
+                {% bootstrap_field form.ano %}
+            </div>
+            <div class="col-2">
+                {% bootstrap_field form.periodo_academico %}
+            </div>
+            <div class="col-3">
+                {% bootstrap_field form.programa %}
+            </div>
+            <div class="col-3">
+                {% bootstrap_field form.profesor %}
+            </div>
+            <div class="col-2">
+                <input type="submit" class="btn btn-md btn-info" value="Filtrar">
+            </div>
+        </div>
+        <hr>
+
+
+    </form>
+    <div class="contenedor-tabla mt-3">
+        {% if niveles_evaluacion %}
+            <table class="table table-bordered table-striped table-td-valign-middle display tabla-fix">
+                <thead>
+                <tr>
+                    {% for tipo_nivel in tipos %}
+                        {% if tipo_nivel.counter == tipos|length %}
+                            <th>%RA</th>
+                        {% endif %}
+                        <th>{{tipo_nivel}}</th>
+                    {% endfor %}
+                    {% if profesor %}
+                        <th>%IL</th>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody class="text-center" style="vertical-align: middle;">
+                    {% for nivel in niveles_evaluacion %}
+                        {% for sub_nivel in nivel.sub_niveles_evaluacion.all %}
+                            {% for sub_sub_nivel in sub_nivel.sub_niveles_evaluacion.all %}
+                                <tr>
+                                    <td>{{ nivel.obtener_descripcion_completa }}</td>
+                                    <td>{{ sub_nivel.obtener_descripcion_completa }}</td>
+                                    {% if sub_nivel.mide_porcentaje %}
+                                        <td>{{ sub_nivel.porcentaje }}%</td>
+                                    {% endif %}
+                                    <td>{{ sub_sub_nivel.obtener_descripcion_completa }}</td>
+                                    {% if profesor %}
+                                        <th>{% obtener_porcentajes_curso_programa sub_sub_nivel.pk profesor_curso_del_programa.pk %}%</th>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="bg-info text-white text-center px-2 py-2 mt-3">
+                Este curso no tiene niveles de evaluación asociados
+            </div>
+        {% endif %}
+
+    </div>
+
+{% endblock contenido_panel %}
